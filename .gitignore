@@ -1,0 +1,10 @@
+data/cutted_score_audio/*
+__pycache__/*
+*.pyc
+*.pyo
+*.pyd
+*.pyi
+audio_model_checkpoints/*
+data/audio_sep_seg/*
+data/score/*
+data/dataset/*
