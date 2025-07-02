@@ -8,3 +8,5 @@ audio_model_checkpoints/*
 data/audio_sep_seg/*
 data/score/*
 data/dataset/*
+ckpts/*
+outputs/*

@@ -1,0 +1,10 @@
+evaluate==0.4.3
+librosa==0.11.0
+peft==0.15.2
+pyloudnorm==0.1.1
+PyYAML==6.0.2
+setuptools==78.1.1
+soundfile==0.13.1
+torch==2.7.1
+tqdm==4.67.1
+transformers==4.52.4

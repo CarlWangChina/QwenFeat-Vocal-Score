@@ -6,7 +6,7 @@ from urllib.request import urlopen
 import librosa
 from transformers import Qwen2AudioForConditionalGeneration, AutoProcessor, Qwen2AudioProcessor
 from transformers.models.qwen2_audio.processing_qwen2_audio import Qwen2AudioProcessorKwargs
-from peft import LoraConfig, get_peft_model, TaskType, PeftModel
+from peft import LoraConfig, get_peft_model, TaskType
 # import wespeaker
 
 # class WespeakerScoreModel(torch.nn.Module):
@@ -104,6 +104,43 @@ class QwenAudioScoreModel(torch.nn.Module):
         # 保存基础配置
         # self.model.base_model.save_pretrained(save_path)
         self.model.base_model.config.save_pretrained(save_path)
+ 
+    @classmethod
+    def load_from_model(cls, save_path, device_map="auto"):
+        """从保存路径加载完整模型"""
+        # 加载基础模型和LoRA配置
+        base_model = Qwen2AudioForConditionalGeneration.from_pretrained(
+            save_path,
+            torch_dtype=torch.float16,
+            device_map=device_map
+        )
+        
+        # 加载LoRA配置
+        lora_config = LoraConfig.from_pretrained(f"{save_path}/lora_weights")
+        
+        # 重建PEFT模型
+        lora_model = get_peft_model(base_model, lora_config)
+        
+        # 加载分类头参数
+        checkpoint = torch.load(f"{save_path}/head.pt", map_location="cpu")
+        
+        # 初始化模型
+        model = cls(
+            output_num=checkpoint["config"]["output_num"],
+            hidden_dim=checkpoint["config"]["hidden_dim"],
+            lora_r=lora_config.r,
+            lora_alpha=lora_config.lora_alpha
+        )
+        
+        # 替换加载的参数
+        model.model = lora_model
+        model.linear.load_state_dict(checkpoint["linear_state"])
+        model.classifier.load_state_dict(checkpoint["classifier_state"])
+        
+        # 确保模型在正确设备上
+        model.to(next(model.parameters()).device)
+        
+        return model
 
     def load_ckpt(self, ckpt_path):
         checkpoint = torch.load(f"{ckpt_path}/head.pt", map_location="cpu")
@@ -111,7 +148,11 @@ class QwenAudioScoreModel(torch.nn.Module):
         self.classifier.load_state_dict(checkpoint["classifier_state"])
 
         if os.path.exists(f"{ckpt_path}/lora_weights"):
-            self.model = PeftModel.from_pretrained(self.model, f"{ckpt_path}/lora_weights")
+            # 加载LoRA配置
+            lora_config = LoraConfig.from_pretrained(f"{ckpt_path}/lora_weights")
+            
+            # 重建PEFT模型
+            self.model = get_peft_model(self.model, lora_config)
 
 class QwenAudioScore():
     def __init__(self, half=True, device="cuda"):

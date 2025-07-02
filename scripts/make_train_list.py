@@ -6,6 +6,15 @@ ROOT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCORE_PATH = os.path.join(ROOT_PATH, "data", "score")
 SCORE_OUTPUT_PATH = os.path.join(ROOT_PATH, "data", "dataset")
 sys.path.append(os.path.join(ROOT_PATH, "src"))
+from collections import Counter
+
+def find_mode(numbers):
+    if not numbers:
+        return None
+    count = Counter(numbers)
+    max_freq = max(count.values())
+    candidates = [num for num, freq in count.items() if freq == max_freq]
+    return min(candidates)
 
 if __name__ == "__main__":
     score1_train_out = open(os.path.join(SCORE_OUTPUT_PATH, "score1", "train.jsonl"), "w")
@@ -22,9 +31,17 @@ if __name__ == "__main__":
         scores = json.load(f)
         for songid,song in scores.items():
             for segid,seg in song.items():
-                print(seg["average"])
-                score1 = round(seg["average"]["score1"])
-                score2 = round(seg["average"]["score2"])
+                print(seg["score"])
+                # 求众数
+
+                scores1 = [item["score1"] for _, item in seg["score"].items()]
+                scores2 = [item["score2"] for _, item in seg["score"].items()]
+                
+                score1 = find_mode(scores1)
+                score2 = find_mode(scores2)
+
+                print(score1, score2)
+
                 for file_path in seg["seg_files"]:
                     data_score1 = {"path": file_path, "score": score1}
                     data_score2 = {"path": file_path, "score": score2}

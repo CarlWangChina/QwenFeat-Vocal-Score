@@ -24,7 +24,7 @@ class AudioDataset(Dataset):
             {
                 "role": "user", "content": [
                     {"type": "audio", "audio_url": "input.wav"},
-                    {"type": "text", "text": "请为这段音频的音色进行打分"},
+                    {"type": "text", "text": "请评价这段歌声音频的音色好听所以受欢迎程度，给出1到5的整数分数"},
                 ]
             }
         ]
@@ -143,6 +143,11 @@ class QwenAudioTrainer:
         
         best_val_loss = float('inf')
         os.makedirs(self.save_dir, exist_ok=True)
+        
+        if self.local_rank in [-1, 0]:
+            print(self.model)
+            self.save_model("initial_model")
+            self.logger.info(f"Initial model saved to {self.save_dir}/initial_model")
         
         for epoch in range(self.epochs):
             # 训练阶段
