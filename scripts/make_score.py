@@ -37,7 +37,7 @@ class ScoreSet:
                 score1 = row.iloc[3]
                 score2 = row.iloc[4]
                 if seg_id not in self.scores[songid]:
-                    audio_path = f"/home/w-4090/cutted_score_audio_separated/{songid}/{seg_id}.wav"
+                    audio_path = f"/home/w-4090/cutted_score_audio/{songid}/{seg_id}.wav"
                     assert os.path.exists(audio_path), f"文件 {audio_path} 不存在"
                     audio_seg_path = os.path.abspath(os.path.join(ROOT_PATH, "data", "audio_sep_seg", str(songid), str(seg_id)))
                     self.scores[songid][seg_id] = {"score":dict(), "average":0, "audio_path":audio_path, "seg_files":process_audio(audio_path, audio_seg_path)}

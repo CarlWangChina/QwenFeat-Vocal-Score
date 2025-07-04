@@ -34,18 +34,18 @@ if __name__ == "__main__":
 
                 gen_text_list = gen_json[audio_id]
 
-                for prompt, gen_text in zip(qwenaudio.prompts.prompts, gen_text_list):
+                for prompt, gen_text in zip(qwenaudio.prompts.prompt_gen_score_by_text, gen_text_list):
 
                     conversation = [
                         {"role": "user", "content": [
                             {"type": "audio", "audio_url": "input.wav"},
-                            {"type": "text", "text": prompt},
+                            {"type": "text", "text": prompt+"\n"+gen_text[1]+"\n"+qwenaudio.prompts.prompt_gen_score_by_text_end},
                         ]}
                     ]
 
                     conversation_text = processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
                     
-                    # print(audio_id, audio_path, prompt, gen_text)
+                    print(audio_id, audio_path, prompt, gen_text)
                     data.append({
                         "audio": audio_path,
                         "text": conversation_text,

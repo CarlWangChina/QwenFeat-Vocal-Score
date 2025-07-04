@@ -27,15 +27,15 @@ if __name__ == "__main__":
     model = Qwen2AudioForConditionalGeneration.from_pretrained(
         "Qwen/Qwen2-Audio-7B-Instruct",
         # torch_dtype=torch.bfloat16,
-        # load_in_4bit=True
-        load_in_8bit=True
+        load_in_4bit=True
+        # load_in_8bit=True
     )
-    model.half()
+    # model.half()
     
     # 应用LoRA微调
     # loftq_config = LoftQConfig(loftq_bits=4)
     peft_config = LoraConfig(
-        r=16,
+        r=32,
         lora_alpha=16,
         target_modules=["q_proj", "v_proj", "k_proj", "o_proj"],
         lora_dropout=0.05,
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     trainer.batch_size = 1
     trainer.lr = 3e-5
     trainer.epochs = 1000
-    trainer.save_dir = "./ckpts/generator-lora-128-64-textonly"
+    trainer.save_dir = "./ckpts/generator-lora-32-16-textonly-v2-int4"
     
     # 开始训练
     trainer.train()

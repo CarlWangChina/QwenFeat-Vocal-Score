@@ -27,8 +27,8 @@ if __name__ == "__main__":
         output_num=5, 
         freeze_weight=False, 
         use_lora=True,
-        lora_r=64, 
-        lora_alpha=4)  # 注意：这里使用了正确的模型引用
+        lora_r=16, 
+        lora_alpha=16)  # 注意：这里使用了正确的模型引用
     if dist.get_rank() == 0:
         print(model)
         for name, module in model.named_modules():
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     trainer.batch_size = 1
     trainer.lr = 3e-6
     trainer.epochs = 100
-    trainer.save_dir = "./ckpts/lora-64-4-pf_score"
+    trainer.save_dir = "./ckpts/score_lora-16-16-pf_score"
     
     # 开始训练
     trainer.train()

@@ -262,8 +262,8 @@ class QwenAudioTrainer:
                     self.logger.info(f"Best model saved (Val Loss: {val_loss:.4f})")
             
             # 定期保存模型
-            if (epoch + 1) % 2 == 0 and self.local_rank in [-1, 0]:
-                self.save_model(f"model_epoch_{epoch+1}")
+            # if (epoch + 1) % 2 == 0 and self.local_rank in [-1, 0]:
+            self.save_model(f"model_epoch_{epoch+1}")
         
         # 训练结束后测试（只在主进程）
         if self.local_rank in [-1, 0] and test_loader:

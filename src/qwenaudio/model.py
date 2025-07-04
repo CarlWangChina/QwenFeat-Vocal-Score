@@ -68,7 +68,7 @@ class QwenAudioScoreModel(torch.nn.Module):
     def forward(self, **args):
         # 主模型前向传播（自动包含LoRA更新）
         x = self.model(**args).logits.to(torch.float32)
-        print(f"Logits requires_grad: {x.requires_grad}")
+        # print(f"Logits requires_grad: {x.requires_grad}")
         
         # 自定义处理流程
         x = self.linear(x)
