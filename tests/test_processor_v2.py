@@ -60,7 +60,7 @@ if __name__ == "__main__":
     score_score_distance_less = 0
     results = []
 
-    with open("/home/w-4090/projects/qwenaudio/data/train_gen/test_score_by_text.json") as fp:
+    with open("/home/w-4090/projects/qwenaudio/data/train_gen/full_score_by_text.json") as fp:
         target_comments = json.load(fp)
         for item in target_comments:
             try:

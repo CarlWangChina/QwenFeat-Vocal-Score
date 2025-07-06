@@ -85,7 +85,7 @@ if __name__ == "__main__":
     trainer.batch_size = 1
     trainer.lr = 3e-5
     trainer.epochs = 70
-    trainer.save_dir = "./ckpts/generator-lora-32-16-scoreonly-f16"
+    trainer.save_dir = "./ckpts/generator-lora-32-16-scoreonly_generatedtext-f16"
     
     # 开始训练
     trainer.train()

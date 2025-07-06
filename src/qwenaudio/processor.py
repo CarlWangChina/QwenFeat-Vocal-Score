@@ -229,10 +229,14 @@ class ScoreProcessorV2:
         generate_ids = self.score_gen.generate(**inputs, max_length=4096)
         generate_ids = generate_ids[:, inputs.input_ids.size(1):]
         text_by_genmodel = self.processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
+        try:
+            score = decode_generated(text_by_genmodel)['score']
+        except:
+            score = 3
         return {
             "prompt": conversation_text,
-            "text": text_by_genmodel+"，"+text,
-            "score":decode_generated(text_by_genmodel)['score']
+            "text": str(score)+"分，"+text,
+            "score":score
         }
     
     def generate(self, audio, gen_method, simple_model=False):

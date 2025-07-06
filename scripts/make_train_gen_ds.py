@@ -43,12 +43,26 @@ if __name__ == "__main__":
     data_gen_text = []
     data_gen_score_by_text = []
     data_gen_text_simple = []
+    generated_prompt = dict()
     
     with open(gen_json_path, 'r') as f:
         gen_json = json.load(f)
     
     with open(score_json_path, 'r') as f:
         score_json = json.load(f)
+
+    with open(os.path.join(ROOT_PATH, "data/train_gen/data_score_by_text.json")) as f:
+        data_gen_score_by_text_ori = json.load(f)
+        for item in data_gen_score_by_text_ori["results"]:
+            row = item["generate"]["text"].split("，")
+            row = "，".join(row[1:])
+            method = item["gen_method"]
+            songid = item["audio_path"].split("/")[-1].split(".")[0]
+            # print(row, method, songid)
+            if songid not in generated_prompt:
+                generated_prompt[songid] = dict()
+            if len(row)<50:
+                generated_prompt[songid][method] = row
 
     prompt_set = [{"1分":set(), "2分":set(), "3分":set(), "4分":set(), "5分":set()} for _ in range(4)]
     for song_id, song_data in score_json.items():
@@ -102,12 +116,13 @@ if __name__ == "__main__":
                         "audio": audio_path,
                         "text": conversation_text
                     })
-
+                    
+                    fix_gen_text = generated_prompt[audio_id][qwenaudio.prompts.prompt_mapper_reverse[i]] if qwenaudio.prompts.prompt_mapper_reverse[i] in generated_prompt[audio_id] else gen_text
                     conversation = [
                         {'role': 'system', 'content': 'You are a critic in the field of vocal performance.'},
                         {"role": "user", "content": [
                             {"type": "audio", "audio_url": "input.wav"},
-                            {"type": "text", "text": qwenaudio.prompts.prompt_gen_score_by_text[i]+"\n"+gen_text+"\n"+qwenaudio.prompts.prompt_gen_score_by_text_end},
+                            {"type": "text", "text": qwenaudio.prompts.prompt_gen_score_by_text[i]+"\n"+fix_gen_text+"\n"+qwenaudio.prompts.prompt_gen_score_by_text_end},
                         ]},
                         {"role": "assistant", "content": [
                             {"type": "text", "text": score_text}
@@ -154,6 +169,8 @@ if __name__ == "__main__":
         json.dump(data_train, f, ensure_ascii=False, indent=4)
     with open(os.path.join(ROOT_PATH, "data/train_gen/test_score_by_text.json"), 'w') as f:
         json.dump(data_test, f, ensure_ascii=False, indent=4)
+    with open(os.path.join(ROOT_PATH, "data/train_gen/full_score_by_text.json"), 'w') as f:
+        json.dump(data_gen_score_by_text, f, ensure_ascii=False, indent=4)
 
     data_train = data_gen_text_simple[:int(len(data_gen_text_simple)*0.8)]
     data_test = data_gen_text_simple[int(len(data_gen_text_simple)*0.8):]
