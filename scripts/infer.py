@@ -16,14 +16,14 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Audio Scoring CLI Tool")
     parser.add_argument("input_file", type=Path, help="Input audio file path")
     parser.add_argument("output_file", type=Path, help="Output JSON file path")
-    parser.add_argument("--score_path", type=str, help="Path to model checkpoint", default="/home/w-4090/projects/qwenaudio_score/ckpts/lora-64-4-pf_score/model_epoch76")
-    parser.add_argument("--generator_path", type=str, help="Path to generator weights", default="/home/w-4090/projects/qwenaudio_score/ckpts/generator-lora-128-64-textonly/best_model_epoch_6/lora_weights")
+    parser.add_argument("--score_path", type=str, help="Path to model checkpoint", default="ckpts/generator-lora-32-16-scoreonly-f16/best_model_epoch_13/lora_weights")
+    parser.add_argument("--generator_path", type=str, help="Path to generator weights", default="ckpts/generator-lora-32-16-textonly-simple-v2-int4/best_model_epoch_16/lora_weights")
     return parser.parse_args()
 
 def initialize_processor(score_path, generator_path):
     """初始化音频处理器"""
     print(f"Initializing model from: {score_path}")
-    processor = qwenaudio.processor.ScoreProcessor(
+    processor = qwenaudio.processor.create_processor(
         score_path,
         generator_path
     )
@@ -47,7 +47,7 @@ def process_audio(input_path, processor):
         # 生成评分
         result = {}
         for i in range(4):
-            result[qwenaudio.prompts.prompt_mapper_reverse[i]] = processor.generate_score_refix(data, i)
+            result[qwenaudio.prompts.prompt_mapper_reverse[i]] = processor.generate(data, i, simple_model=True)
         
         return result
 
