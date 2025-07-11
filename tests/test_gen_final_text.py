@@ -32,5 +32,5 @@ if __name__ == "__main__":
         val = processor.generate(data, i, simple_model=True)
         result[qwenaudio.prompts.prompt_mapper_reverse[i]] = (val["text"], val["score"])
     
-    print(qwenaudio.gen_final_text.generate_vocal_critique(result, qwenaudio.config.api_key))
+    print(qwenaudio.gen_final_text.generate_vocal_critique(result))
     

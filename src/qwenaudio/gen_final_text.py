@@ -1,7 +1,12 @@
+import os
 import dashscope
+import qwenaudio.config
 from http import HTTPStatus
+from modelscope.pipelines import pipeline
 
-def generate_vocal_critique(input_comments, api_key):
+dashscope.api_key = qwenaudio.config.api_key
+
+def generate_vocal_critique(input_comments):
     """
     生成声乐评估报告和建议
     
@@ -16,8 +21,6 @@ def generate_vocal_critique(input_comments, api_key):
             完整报告: API返回的完整文本
             总结评语: 提取的总结性评语(用于TTS)
     """
-    # 设置API密钥
-    dashscope.api_key = api_key
     
     # 构建评语字符串
     critique = ""
@@ -53,3 +56,29 @@ def generate_vocal_critique(input_comments, api_key):
     else:
         # print(f"报告生成失败！状态码: {response.status_code}")
         return False, None, None
+    
+def synthesize_speech(summary_comment, reference_audio_path):
+    """
+    合成评委语音
+    
+    返回: (success, message) 元组
+    """
+    if not summary_comment:
+        error_msg = "错误：没有可用的总结评语，请先生成报告"
+        return False, error_msg
+    
+    if not os.path.exists(reference_audio_path):
+        error_msg = f"错误：音色参考文件未找到，请检查路径: '{reference_audio_path}'"
+        return False, error_msg
+    
+    try:
+        
+        # 初始化并调用TTS pipeline
+        tts_pipeline = pipeline(task='text-to-speech', model='iic/CosyVoice-3.1-zh')
+        output_wav = tts_pipeline(text=summary_comment, speaker_name=reference_audio_path)['output_wav']
+        
+        return True,output_wav
+        
+    except Exception as e:
+        error_msg = f"语音合成过程中发生异常: {str(e)}"
+        return False, error_msg

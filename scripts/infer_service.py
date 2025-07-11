@@ -18,7 +18,7 @@ import qwenaudio.prompts
 import qwenaudio.gen_final_text
 
 # GPU设备配置（根据实际GPU数量调整）
-GPU_DEVICES = [1,2,3,4,5,6,7]
+GPU_DEVICES = [7]
 NUM_WORKERS = len(GPU_DEVICES)
 
 # 全局进程池
