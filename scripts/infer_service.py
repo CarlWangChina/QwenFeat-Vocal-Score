@@ -66,6 +66,9 @@ class ProcessorWorker:
             
             if get_final_text:
                 result["final_text"] = qwenaudio.gen_final_text.generate_vocal_critique(result_to_gen)
+                if render_final_text:
+                    # TODO:调用synthesize_speech函数生成音频
+                    pass
                 
             return result
 
@@ -110,10 +113,22 @@ def process_audio_in_worker(audio_bytes, get_final_text=False, render_final_text
     global _worker
     return _worker.process_audio(audio_bytes, get_final_text=get_final_text, render_final_text=render_final_text)
 
-async def audio_handler(request):
-    """处理音频请求"""
+async def process_audio_bytes(audio_bytes, get_final_text, render_final_text):
+    """处理音频字节的核心逻辑"""
     global worker_round_robin
     
+    # 轮询选择worker
+    worker_idx = next(worker_round_robin)
+    
+    # 异步处理音频
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(
+        executor,
+        functools.partial(process_audio_in_worker, audio_bytes, get_final_text, render_final_text)
+    )
+
+async def audio_handler(request):
+    """处理音频请求"""
     try:
         # 读取音频文件
         reader = await request.multipart()
@@ -121,21 +136,43 @@ async def audio_handler(request):
         assert field.name == "file"
         audio_bytes = await field.read()
 
-        # 从查询参数获取get_final_text标志
+        # 从查询参数获取标志
         get_final_text = request.query.get("get_final_text", "false").lower() in ["true", "1", "yes"]
         render_final_text = request.query.get("render_final_text", "false").lower() in ["true", "1", "yes"]
         
-        # 轮询选择worker
-        worker_idx = next(worker_round_robin)
-        
-        # 异步处理音频
-        loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(
-            executor,
-            functools.partial(process_audio_in_worker, audio_bytes, get_final_text, render_final_text)
-        )
+        result = await process_audio_bytes(audio_bytes, get_final_text, render_final_text)
         return web.json_response(result)
 
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+async def local_audio_handler(request):
+    """处理本地路径的音频文件（仅允许127.0.0.1访问）"""
+    # 检查客户端IP
+    if request.remote != "127.0.0.1":
+        return web.json_response({"error": "Forbidden"}, status=403)
+    
+    try:
+        # 读取表单数据
+        data = await request.post()
+        file_path = data.get("path")
+        
+        if not file_path:
+            return web.json_response({"error": "Missing 'path' parameter"}, status=400)
+        
+        # 读取本地文件
+        with open(file_path, "rb") as f:
+            audio_bytes = f.read()
+        
+        # 从查询参数获取标志
+        get_final_text = request.query.get("get_final_text", "false").lower() in ["true", "1", "yes"]
+        render_final_text = request.query.get("render_final_text", "false").lower() in ["true", "1", "yes"]
+        
+        result = await process_audio_bytes(audio_bytes, get_final_text, render_final_text)
+        return web.json_response(result)
+
+    except FileNotFoundError:
+        return web.json_response({"error": "File not found"}, status=404)
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
 
@@ -143,6 +180,7 @@ if __name__ == "__main__":
     app = web.Application()
     app.on_startup.append(init_app)
     app.router.add_post("/score", audio_handler)
+    app.router.add_post("/score_local", local_audio_handler)  # 添加新的本地端点
     
     web.run_app(
         app,

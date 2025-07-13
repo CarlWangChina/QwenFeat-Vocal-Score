@@ -34,12 +34,11 @@ def decode_generated(text):
     score = extract_first_digit_loop(text)
     return {
         "text": text,
-        "score": int(score),
+        "score": int(score) if score is not None else 3,
     }
 
 class CustomStoppingCriteria(StoppingCriteria):
     def __call__(self, input_ids, scores, **kwargs):
-        # 自定义逻辑：例如，当生成文本包含"谢谢"时停止
         decoded_text = self.tokenizer.decode(input_ids[0])
         return "\n" in decoded_text
     
@@ -72,7 +71,7 @@ class ScoreProcessor:
         ]
 
         conversation_text = self.processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
-        inputs = self.processor(text=conversation_text, audios=audio, return_tensors="pt", padding=True).to("cuda")
+        inputs = self.processor(text=conversation_text, audio=audio, return_tensors="pt", padding=True).to("cuda")
         generate_ids = self.text_gen.generate(**inputs, max_length=1024)
         generate_ids = generate_ids[:, inputs.input_ids.size(1):]
         text_by_genmodel = self.processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
@@ -95,7 +94,7 @@ class ScoreProcessor:
         ]
         
         conversation_text = self.processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
-        inputs = self.processor(text=conversation_text, audios=audio, return_tensors="pt", padding=True).to("cuda")
+        inputs = self.processor(text=conversation_text, audio=audio, return_tensors="pt", padding=True).to("cuda")
 
         outputs = self.model(
             input_ids=inputs.input_ids,
@@ -122,7 +121,7 @@ class ScoreProcessor:
 
         conversation_text = self.processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
         conversation_text += str(score)+"分，"
-        inputs = self.processor(text=conversation_text, audios=audio, return_tensors="pt", padding=True).to("cuda")
+        inputs = self.processor(text=conversation_text, audio=audio, return_tensors="pt", padding=True).to("cuda")
         generate_ids = self.text_gen.generate(**inputs, max_length=1024)
         generate_ids = generate_ids[:, inputs.input_ids.size(1):]
         text_by_genmodel = self.processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
@@ -142,7 +141,7 @@ class ScoreProcessor:
                     {"type": "text", "text": f"这是一个歌手的演唱，对它的{gen_method}评分如下：\n{text_by_genmodel_with_score}\n请根据这条内容给出一个评分数值，数值介于0到5之间，1为最差，5为最好。评分标准如下：\n"+ qwenaudio.prompts.prompt_refix[gen_method_text]},
                 ]}
             ], add_generation_prompt=True, tokenize=False)
-        inputs = self.processor(text=conversation_refix_text, audios=audio, return_tensors="pt", padding=True).to("cuda")
+        inputs = self.processor(text=conversation_refix_text, audio=audio, return_tensors="pt", padding=True).to("cuda")
         generate_ids = self.text_gen.generate(**inputs, max_length=1024)
         generate_ids = generate_ids[:, inputs.input_ids.size(1):]
         text_by_genmodel_refix = self.processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
@@ -205,7 +204,7 @@ class ScoreProcessorV2:
             ]}
         ]
         conversation_text = self.processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
-        inputs = self.processor(text=conversation_text, audios=audio, return_tensors="pt", padding=True).to("cuda")
+        inputs = self.processor(text=conversation_text, audio=audio, return_tensors="pt", padding=True).to("cuda")
         generate_ids = self.text_gen.generate(**inputs, max_length=4096, eos_token_id=self.processor.tokenizer.encode("\n")[0])
         generate_ids = generate_ids[:, inputs.input_ids.size(1):]
         text_by_genmodel = self.processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
@@ -225,7 +224,7 @@ class ScoreProcessorV2:
             ]}
         ]
         conversation_text = self.processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
-        inputs = self.processor(text=conversation_text, audios=audio, return_tensors="pt", padding=True).to("cuda")
+        inputs = self.processor(text=conversation_text, audio=audio, return_tensors="pt", padding=True).to("cuda")
         generate_ids = self.score_gen.generate(**inputs, max_length=4096)
         generate_ids = generate_ids[:, inputs.input_ids.size(1):]
         text_by_genmodel = self.processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
@@ -288,7 +287,7 @@ class ScoreProcessorV3:
             ]}
         ]
         conversation_text = self.processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
-        inputs = self.processor(text=conversation_text, audios=audio, return_tensors="pt", padding=True).to("cuda")
+        inputs = self.processor(text=conversation_text, audio=audio, return_tensors="pt", padding=True).to("cuda")
         generate_ids = self.text_gen.generate(**inputs, max_length=4096)
         generate_ids = generate_ids[:, inputs.input_ids.size(1):]
         text_by_genmodel = self.processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
@@ -308,7 +307,7 @@ class ScoreProcessorV3:
             ]}
         ]
         conversation_text = self.processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
-        inputs = self.processor(text=conversation_text, audios=audio, return_tensors="pt", padding=True).to("cuda")
+        inputs = self.processor(text=conversation_text, audio=audio, return_tensors="pt", padding=True).to("cuda")
 
         outputs = self.model(
             input_ids=inputs.input_ids,
