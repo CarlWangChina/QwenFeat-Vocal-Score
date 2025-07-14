@@ -9,50 +9,61 @@ import json
 import uuid
 import requests
 
-# 填写平台申请的appid, access_token以及cluster
-appid = "2423455087"
-access_token= "UBnRWB_TOdHd6dRM3k2S24S1b_fHZ1b0"
-cluster = "volcano_icl"
+import os
+import sys
+ROOT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.join(ROOT_PATH, "src"))
 
-voice_type = "S_NcV7oCTw1"
+import qwenaudio.gen_final_text
+
 host = "openspeech.bytedance.com"
 api_url = f"https://{host}/api/v1/tts"
 
-header = {"Authorization": f"Bearer;{access_token}"}
 
-request_json = {
-    "app": {
-        "appid": appid,
-        "token": "access_token",
-        "cluster": cluster
-    },
-    "user": {
-        "uid": "388808087185088"
-    },
-    "audio": {
-        "voice_type": voice_type,
-        "encoding": "mp3",
-        "speed_ratio": 1.0,
-        "volume_ratio": 1.0,
-        "pitch_ratio": 1.0,
-    },
-    "request": {
-        "reqid": str(uuid.uuid4()),
-        "text": "字节跳动语音合成",
-        "text_type": "plain",
-        "operation": "query",
-        "with_frontend": 1,
-        "frontend_type": "unitTson"
-
+def train(appid, token, audio_path, spk_id):
+    url = "https://" + host + "/api/v1/mega_tts/audio/upload"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer;" + token,
+        "Resource-Id": "volc.megatts.voiceclone",
     }
-}
+    encoded_data, audio_format = encode_audio_file(audio_path)
+    audios = [{"audio_bytes": encoded_data, "audio_format": audio_format}]
+    data = {"appid": appid, "speaker_id": spk_id, "audios": audios, "source": 2,"language": 0, "model_type": 1}
+    response = requests.post(url, json=data, headers=headers)
+    print("status code = ", response.status_code)
+    if response.status_code != 200:
+        raise Exception("train请求错误:" + response.text)
+    print("headers = ", response.headers)
+    print(response.json())
+
+
+def get_status(appid, token, spk_id):
+    url = "https://" + host + "/api/v1/mega_tts/status"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer;" + token,
+        "Resource-Id": "volc.megatts.voiceclone",
+    }
+    body = {"appid": appid, "speaker_id": spk_id}
+    response = requests.post(url, headers=headers, json=body)
+    print(response.json())
+
+
+def encode_audio_file(file_path):
+    with open(file_path, 'rb') as audio_file:
+        audio_data = audio_file.read()
+        encoded_data = str(base64.b64encode(audio_data), "utf-8")
+        audio_format = os.path.splitext(file_path)[1][1:]  # 获取文件扩展名作为音频格式
+        return encoded_data, audio_format
 
 if __name__ == '__main__':
+    # train(appid, access_token, "/home/w-4090/projects/qwenaudio/data/translate_to_chinese.wav", "S_NcV7oCTw1")
     try:
-        resp = requests.post(api_url, json.dumps(request_json), headers=header)
-        print(f"resp body: \n{resp.json()}")
-        if "data" in resp.json():
-            data = resp.json()["data"]
+        resp = qwenaudio.gen_final_text.synthesize_speech("你好")
+        print(f"resp body: \n{resp}")
+        if "data" in resp:
+            data = resp["data"]
             file_to_save = open("test_submit.mp3", "wb")
             file_to_save.write(base64.b64decode(data))
     except Exception as e:

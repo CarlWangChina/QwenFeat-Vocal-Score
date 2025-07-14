@@ -4,7 +4,31 @@ import qwenaudio.config
 from http import HTTPStatus
 from modelscope.pipelines import pipeline
 
+import re
+import base64
+import json
+import uuid
+import requests
+
 dashscope.api_key = qwenaudio.config.api_key
+
+def split_text(text):
+    # 使用正则表达式匹配数字后跟顿号的模式（中间可能有空格或tab）
+    pattern = r'\d+[ \t]*、'
+    segments = re.split(pattern, text)
+    
+    # 提取所有分隔符（数字、顿号及中间的空格/tab）
+    separators = re.findall(pattern, text)
+    
+    # 由于split结果第一个元素是空字符串（因为文本以分隔符开头），所以从第二个元素开始组合
+    # 将每个分隔符与对应的分段内容组合起来
+    result = []
+    for i in range(len(separators)):
+        # 分隔符 + 对应的内容（segments[i+1]）
+        segment = separators[i] + segments[i+1].strip('\n')
+        result.append(segment)
+    
+    return result
 
 def generate_vocal_critique(input_comments):
     """
@@ -49,36 +73,58 @@ def generate_vocal_critique(input_comments):
         # print("报告生成成功！")
         
         # 提取总结评语（第一行且去除序号）
-        summary_line = full_report.split('\n')[0]
-        summary_comment = summary_line.replace('1、', '').strip()
+        summary_line = split_text(full_report)[0]
+        summary_comment = summary_line.replace('1、', '').replace('\n', '').strip()
         
         return True, full_report, summary_comment
     else:
         # print(f"报告生成失败！状态码: {response.status_code}")
         return False, None, None
     
-def synthesize_speech(summary_comment, reference_audio_path):
+def synthesize_speech(summary_comment):
     """
     合成评委语音
     
     返回: (success, message) 元组
     """
-    if not summary_comment:
-        error_msg = "错误：没有可用的总结评语，请先生成报告"
-        return False, error_msg
-    
-    if not os.path.exists(reference_audio_path):
-        error_msg = f"错误：音色参考文件未找到，请检查路径: '{reference_audio_path}'"
-        return False, error_msg
-    
+    api_url = f"https://{qwenaudio.config.tts_host}/api/v1/tts"
+
+    header = {"Authorization": f"Bearer;{qwenaudio.config.tts_access_token}"}
+
+    request_json = {
+        "app": {
+            "appid": qwenaudio.config.tts_appid,
+            "token": qwenaudio.config.tts_access_token,
+            "cluster": qwenaudio.config.tts_cluster
+        },
+        "user": {
+            "uid": "388808087185088"
+        },
+        "audio": {
+            "voice_type": qwenaudio.config.tts_voice_type,
+            "encoding": "mp3",
+            "speed_ratio": 1.0,
+            "volume_ratio": 1.0,
+            "pitch_ratio": 1.0,
+        },
+        "request": {
+            "reqid": str(uuid.uuid4()),
+            "text": summary_comment,
+            "text_type": "plain",
+            "operation": "query",
+            "with_frontend": 1,
+            "frontend_type": "unitTson"
+
+        }
+    }
     try:
-        
-        # 初始化并调用TTS pipeline
-        tts_pipeline = pipeline(task='text-to-speech', model='iic/CosyVoice-3.1-zh')
-        output_wav = tts_pipeline(text=summary_comment, speaker_name=reference_audio_path)['output_wav']
-        
-        return True,output_wav
-        
+        resp = requests.post(api_url, json.dumps(request_json), headers=header)
+        # print(f"resp body: \n{resp.json()}")
+        # if "data" in resp.json():
+        #     data = resp.json()["data"]
+        #     file_to_save = open("test_submit.mp3", "wb")
+        #     file_to_save.write(base64.b64decode(data))
+        return resp.json()
     except Exception as e:
-        error_msg = f"语音合成过程中发生异常: {str(e)}"
-        return False, error_msg
+        # print(f"Error: {e}")
+        return str(e)

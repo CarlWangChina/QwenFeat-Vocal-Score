@@ -68,8 +68,7 @@ class ProcessorWorker:
                 if get_final_text:
                     result["final_text"] = qwenaudio.gen_final_text.generate_vocal_critique(result_to_gen)
                     if render_final_text:
-                        # TODO:调用synthesize_speech函数生成音频
-                        pass
+                        result["speech"] = qwenaudio.gen_final_text.synthesize_speech(result["final_text"][2])
                     
                 return result
         except Exception as e:
