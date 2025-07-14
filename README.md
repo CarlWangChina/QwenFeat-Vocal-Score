@@ -7,6 +7,9 @@
 调用：  
 `curl -X POST http://localhost:8080/score   -F "file=@音频路径"`  
 
+添加`get_final_text`参数会生成总结文本  
+例如`http://localhost:8080/score?get_final_text=1`  
+
 ### 命令行调用
 `python scripts/infer.py 音频路径.wav 输出文件.txt`
 

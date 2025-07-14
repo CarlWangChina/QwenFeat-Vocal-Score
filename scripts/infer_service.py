@@ -44,33 +44,37 @@ class ProcessorWorker:
 
     def process_audio(self, audio_bytes, get_final_text=False, render_final_text=False):
         """处理音频数据"""
-        with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as tmp_file:
-            tmp_file.write(audio_bytes)
-            tmp_file.flush()
+        try:
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as tmp_file:
+                tmp_file.write(audio_bytes)
+                tmp_file.flush()
 
-            data, sr = librosa.load(
-                tmp_file.name,
-                sr=self.processor.processor.feature_extractor.sampling_rate,
-                mono=True
-            )
+                data, sr = librosa.load(
+                    tmp_file.name,
+                    sr=self.processor.processor.feature_extractor.sampling_rate,
+                    mono=True
+                )
 
-            max_samples = self.processor.processor.feature_extractor.sampling_rate * 30
-            data = data[:max_samples]
+                max_samples = self.processor.processor.feature_extractor.sampling_rate * 30
+                data = data[:max_samples]
 
-            result = {}
-            result_to_gen = {}
-            for i in range(4):
-                val = self.processor.generate(data, i, simple_model=True)
-                result_to_gen[qwenaudio.prompts.prompt_mapper_reverse[i]] = (val["text"], val["score"])
-                result[qwenaudio.prompts.prompt_mapper_reverse[i]] = val
-            
-            if get_final_text:
-                result["final_text"] = qwenaudio.gen_final_text.generate_vocal_critique(result_to_gen)
-                if render_final_text:
-                    # TODO:调用synthesize_speech函数生成音频
-                    pass
+                result = {}
+                result_to_gen = {}
+                for i in range(4):
+                    val = self.processor.generate(data, i, simple_model=True)
+                    result_to_gen[qwenaudio.prompts.prompt_mapper_reverse[i]] = (val["text"], val["score"])
+                    result[qwenaudio.prompts.prompt_mapper_reverse[i]] = val
                 
-            return result
+                if get_final_text:
+                    result["final_text"] = qwenaudio.gen_final_text.generate_vocal_critique(result_to_gen)
+                    if render_final_text:
+                        # TODO:调用synthesize_speech函数生成音频
+                        pass
+                    
+                return result
+        except Exception as e:
+            err_str = f"Error processing audio: {str(e)}"
+            return {"error": err_str}
 
 async def init_app(app):
     """应用初始化"""

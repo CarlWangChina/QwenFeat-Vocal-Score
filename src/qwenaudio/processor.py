@@ -35,6 +35,7 @@ def decode_generated(text):
     return {
         "text": text,
         "score": int(score) if score is not None else 3,
+        "score_ori": score
     }
 
 class CustomStoppingCriteria(StoppingCriteria):
@@ -179,6 +180,24 @@ class ScoreProcessorV2:
         self.score_gen.eval()
         with open("data/train_gen/prompt_set.json") as fp:
             self.prompt_sample = json.load(fp)
+        
+        # 定义目标字符集合
+        self.target_chars = ['1', '2', '3', '4', '5']
+
+        # 获取这些字符对应的token ID
+        target_token_ids = []
+        for char in self.target_chars:
+            # 编码单个字符
+            token_id = self.processor.tokenizer.encode(char, add_special_tokens=False)
+            # 确保是单个token
+            if len(token_id) == 1:
+                target_token_ids.append(token_id[0])
+            else:
+                # print(f"警告: 字符 '{char}' 被编码为多个token: {token_id}")
+                print(f"Warning: Character '{char}' is encoded as multiple tokens: {token_id}")
+        self.target_token_ids = target_token_ids
+
+        print("load ScoreProcessorV2 done")
 
     def generate_text(self, audio, gen_method, simple_model=False):
         if isinstance(gen_method, str):
@@ -225,17 +244,44 @@ class ScoreProcessorV2:
         ]
         conversation_text = self.processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
         inputs = self.processor(text=conversation_text, audio=audio, return_tensors="pt", padding=True).to("cuda")
-        generate_ids = self.score_gen.generate(**inputs, max_length=4096)
-        generate_ids = generate_ids[:, inputs.input_ids.size(1):]
-        text_by_genmodel = self.processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
-        try:
-            score = decode_generated(text_by_genmodel)['score']
-        except:
-            score = 3
+        # generate_ids = self.score_gen.generate(**inputs, max_length=4096)
+        # generate_ids = generate_ids[:, inputs.input_ids.size(1):]
+        # text_by_genmodel = self.processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
+        with torch.no_grad():
+            outputs = self.score_gen(**inputs)
+
+            # 获取下一个token的logits
+            next_token_logits = outputs.logits[:, -1, :]  # [1, vocab_size]
+
+            # 提取目标token的概率
+            target_logits = next_token_logits[:, self.target_token_ids]  # [1, 6]
+            target_probs = torch.nn.functional.softmax(target_logits, dim=-1)  # [1, 6]
+
+            # 转换为概率字典
+            char_probs = {}
+            for i, char in enumerate(self.target_chars):
+                # 获取概率值（转换为Python float）
+                prob = target_probs[0, i].item()
+                char_probs[char] = prob
+
+            # 归一化概率
+            total_prob = sum(char_probs.values())
+            if total_prob > 0:
+                for char in char_probs:
+                    char_probs[char] /= total_prob
+
+            # 现在char_probs包含每个数字字符的概率
+            # print("数字概率分布:", char_probs)
+            
+            char_probs_max_key = max(char_probs, key=char_probs.get)
+            # print("预测的分数是：", char_probs_max_key)
+            score = int(char_probs_max_key)
+
         return {
             "prompt": conversation_text,
             "text": str(score)+"分，"+text,
-            "score":score
+            "score":score,
+            "probs":char_probs
         }
     
     def generate(self, audio, gen_method, simple_model=False):
@@ -262,6 +308,7 @@ class ScoreProcessorV3:
         
         with open("data/train_gen/prompt_set.json") as fp:
             self.prompt_sample = json.load(fp)
+        print("load ScoreProcessorV3 done")
 
     def generate_text(self, audio, gen_method, simple_model=False):
         if isinstance(gen_method, str):
@@ -329,6 +376,9 @@ class ScoreProcessorV3:
         return score
 
 def create_processor(score_model_path, text_model_path):
+    print("create_processor")
+    print("score_model_path", score_model_path)
+    print("text_model_path", text_model_path)
     if not os.path.exists(score_model_path) or not os.path.exists(text_model_path):
         raise FileNotFoundError("model not found")
     elif os.path.exists(os.path.join(score_model_path,"head.pt")):
