@@ -42,7 +42,7 @@ class ProcessorWorker:
         )
         print(f"Processor on GPU {self.gpu_id} initialized.")
 
-    def process_audio(self, audio_bytes, get_final_text=False, render_final_text=False):
+    def process_audio(self, audio_bytes, get_final_text=False, render_final_text=False, process_steps=[0,1,2,3]):
         """处理音频数据"""
         try:
             with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as tmp_file:
@@ -60,7 +60,7 @@ class ProcessorWorker:
 
                 result = {}
                 result_to_gen = {}
-                for i in range(4):
+                for i in process_steps:
                     val = self.processor.generate(data, i, simple_model=True)
                     result_to_gen[qwenaudio.prompts.prompt_mapper_reverse[i]] = (val["text"], val["score"])
                     result[qwenaudio.prompts.prompt_mapper_reverse[i]] = val
@@ -111,23 +111,29 @@ def init_worker_process(gpu_id):
     global _worker
     _worker = ProcessorWorker(gpu_id)
 
-def process_audio_in_worker(audio_bytes, get_final_text=False, render_final_text=False):
+def process_audio_in_worker(audio_bytes, get_final_text=False, render_final_text=False, process_steps=[0,1,2,3]):
     """在工作进程中处理音频"""
     global _worker
-    return _worker.process_audio(audio_bytes, get_final_text=get_final_text, render_final_text=render_final_text)
+    return _worker.process_audio(audio_bytes, get_final_text=get_final_text, render_final_text=render_final_text, process_steps=process_steps)
 
-async def process_audio_bytes(audio_bytes, get_final_text, render_final_text):
+async def process_audio_bytes(audio_bytes, get_final_text, render_final_text, process_steps):
     """处理音频字节的核心逻辑"""
     global worker_round_robin
     
     # 轮询选择worker
     worker_idx = next(worker_round_robin)
+
+    # 把process_steps拆成字符
+    process_steps_id = set()
+    for i in process_steps:
+        if i in ["0", "1", "2", "3"]:
+            process_steps_id.add(int(i))
     
     # 异步处理音频
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(
         executor,
-        functools.partial(process_audio_in_worker, audio_bytes, get_final_text, render_final_text)
+        functools.partial(process_audio_in_worker, audio_bytes, get_final_text, render_final_text, list(process_steps_id))
     )
 
 async def audio_handler(request):
@@ -142,8 +148,9 @@ async def audio_handler(request):
         # 从查询参数获取标志
         get_final_text = request.query.get("get_final_text", "false").lower() in ["true", "1", "yes"]
         render_final_text = request.query.get("render_final_text", "false").lower() in ["true", "1", "yes"]
+        process_steps = request.query.get("process_steps", "0123").lower()
         
-        result = await process_audio_bytes(audio_bytes, get_final_text, render_final_text)
+        result = await process_audio_bytes(audio_bytes, get_final_text, render_final_text, process_steps)
         return web.json_response(result)
 
     except Exception as e:
@@ -170,8 +177,9 @@ async def local_audio_handler(request):
         # 从查询参数获取标志
         get_final_text = request.query.get("get_final_text", "false").lower() in ["true", "1", "yes"]
         render_final_text = request.query.get("render_final_text", "false").lower() in ["true", "1", "yes"]
+        process_steps = request.query.get("process_steps", "0123").lower()
         
-        result = await process_audio_bytes(audio_bytes, get_final_text, render_final_text)
+        result = await process_audio_bytes(audio_bytes, get_final_text, render_final_text, process_steps)
         return web.json_response(result)
 
     except FileNotFoundError:

@@ -15,6 +15,7 @@ ROOT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.join(ROOT_PATH, "src"))
 
 import qwenaudio.gen_final_text
+import qwenaudio.config
 
 host = "openspeech.bytedance.com"
 api_url = f"https://{host}/api/v1/tts"
@@ -58,13 +59,13 @@ def encode_audio_file(file_path):
         return encoded_data, audio_format
 
 if __name__ == '__main__':
-    # train(appid, access_token, "/home/w-4090/projects/qwenaudio/data/translate_to_chinese.wav", "S_NcV7oCTw1")
-    try:
-        resp = qwenaudio.gen_final_text.synthesize_speech("你好")
-        print(f"resp body: \n{resp}")
-        if "data" in resp:
-            data = resp["data"]
-            file_to_save = open("test_submit.mp3", "wb")
-            file_to_save.write(base64.b64decode(data))
-    except Exception as e:
-        e.with_traceback()
+    train(qwenaudio.config.tts_appid, qwenaudio.config.tts_access_token, "/home/w-4090/projects/qwenaudio/data/zjl.MP3", "S_NcV7oCTw1")
+    # try:
+    #     resp = qwenaudio.gen_final_text.synthesize_speech("你好")
+    #     print(f"resp body: \n{resp}")
+    #     if "data" in resp:
+    #         data = resp["data"]
+    #         file_to_save = open("test_submit.mp3", "wb")
+    #         file_to_save.write(base64.b64decode(data))
+    # except Exception as e:
+    #     e.with_traceback()

@@ -5,3 +5,5 @@ tts_access_token= "UBnRWB_TOdHd6dRM3k2S24S1b_fHZ1b0"
 tts_cluster = "volcano_icl"
 tts_voice_type = "S_NcV7oCTw1"
 tts_host = "openspeech.bytedance.com"
+
+max_length=8192

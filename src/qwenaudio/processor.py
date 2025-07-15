@@ -19,6 +19,7 @@ import random
 from transformers import StoppingCriteria
 
 import qwenaudio.prompts 
+import qwenaudio.config 
 from qwenaudio.model import QwenAudioScoreModel
 from qwenaudio.trainer_pf_score import AudioDataset
 
@@ -58,6 +59,7 @@ class ScoreProcessor:
         self.text_gen.to("cuda")
         self.text_gen.eval()
     
+    @torch.inference_mode()
     def generate_text(self, audio, gen_method):
         if isinstance(gen_method, str):
             gen_method = qwenaudio.prompts.prompt_mapper[gen_method]
@@ -73,7 +75,7 @@ class ScoreProcessor:
 
         conversation_text = self.processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
         inputs = self.processor(text=conversation_text, audio=audio, return_tensors="pt", padding=True).to("cuda")
-        generate_ids = self.text_gen.generate(**inputs, max_length=1024)
+        generate_ids = self.text_gen.generate(**inputs, max_length=qwenaudio.config.max_length)
         generate_ids = generate_ids[:, inputs.input_ids.size(1):]
         text_by_genmodel = self.processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
         res_genmodel = decode_generated(text_by_genmodel)
@@ -81,6 +83,7 @@ class ScoreProcessor:
 
         return res_genmodel
 
+    @torch.inference_mode()
     def generate_score(self, audio, gen_method):
         if isinstance(gen_method, str):
             gen_method = qwenaudio.prompts.prompt_mapper[gen_method]
@@ -107,6 +110,7 @@ class ScoreProcessor:
 
         return {"score":out_id+1, "prompt": conversation_text}
     
+    @torch.inference_mode()
     def generate_text_with_score(self, audio, gen_method, score):
         if isinstance(gen_method, str):
             gen_method = qwenaudio.prompts.prompt_mapper[gen_method]
@@ -123,7 +127,7 @@ class ScoreProcessor:
         conversation_text = self.processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
         conversation_text += str(score)+"分，"
         inputs = self.processor(text=conversation_text, audio=audio, return_tensors="pt", padding=True).to("cuda")
-        generate_ids = self.text_gen.generate(**inputs, max_length=1024)
+        generate_ids = self.text_gen.generate(**inputs, max_length=qwenaudio.config.max_length)
         generate_ids = generate_ids[:, inputs.input_ids.size(1):]
         text_by_genmodel = self.processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
         res_genmodel = decode_generated(text_by_genmodel)
@@ -131,6 +135,7 @@ class ScoreProcessor:
 
         return res_genmodel
 
+    @torch.inference_mode()
     def generate_score_with_text(self, audio, gen_method, text_by_genmodel_with_score):
         if isinstance(gen_method, str):
             gen_method = qwenaudio.prompts.prompt_mapper[gen_method]
@@ -143,13 +148,14 @@ class ScoreProcessor:
                 ]}
             ], add_generation_prompt=True, tokenize=False)
         inputs = self.processor(text=conversation_refix_text, audio=audio, return_tensors="pt", padding=True).to("cuda")
-        generate_ids = self.text_gen.generate(**inputs, max_length=1024)
+        generate_ids = self.text_gen.generate(**inputs, max_length=qwenaudio.config.max_length)
         generate_ids = generate_ids[:, inputs.input_ids.size(1):]
         text_by_genmodel_refix = self.processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
         res_refix = decode_generated(text_by_genmodel_refix.strip("分")+"分，"+text_by_genmodel_with_score)
         res_refix["prompt"] = conversation_refix_text
         return res_refix
     
+    @torch.inference_mode()
     def generate_score_refix(self, audio, gen_method):
         if isinstance(gen_method, str):
             gen_method = qwenaudio.prompts.prompt_mapper[gen_method]
@@ -199,6 +205,7 @@ class ScoreProcessorV2:
 
         print("load ScoreProcessorV2 done")
 
+    @torch.inference_mode()
     def generate_text(self, audio, gen_method, simple_model=False):
         if isinstance(gen_method, str):
             gen_method = qwenaudio.prompts.prompt_mapper[gen_method]
@@ -224,7 +231,7 @@ class ScoreProcessorV2:
         ]
         conversation_text = self.processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
         inputs = self.processor(text=conversation_text, audio=audio, return_tensors="pt", padding=True).to("cuda")
-        generate_ids = self.text_gen.generate(**inputs, max_length=4096, eos_token_id=self.processor.tokenizer.encode("\n")[0])
+        generate_ids = self.text_gen.generate(**inputs, max_length=qwenaudio.config.max_length, eos_token_id=self.processor.tokenizer.encode("\n")[0])
         generate_ids = generate_ids[:, inputs.input_ids.size(1):]
         text_by_genmodel = self.processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
         return {
@@ -232,6 +239,7 @@ class ScoreProcessorV2:
             "text": text_by_genmodel
         }
 
+    @torch.inference_mode()
     def generate_score(self, audio, gen_method, text):
         if isinstance(gen_method, str):
             gen_method = qwenaudio.prompts.prompt_mapper[gen_method]
@@ -244,7 +252,7 @@ class ScoreProcessorV2:
         ]
         conversation_text = self.processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
         inputs = self.processor(text=conversation_text, audio=audio, return_tensors="pt", padding=True).to("cuda")
-        # generate_ids = self.score_gen.generate(**inputs, max_length=4096)
+        # generate_ids = self.score_gen.generate(**inputs, max_length=qwenaudio.config.max_length)
         # generate_ids = generate_ids[:, inputs.input_ids.size(1):]
         # text_by_genmodel = self.processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
         with torch.no_grad():
@@ -284,6 +292,7 @@ class ScoreProcessorV2:
             "probs":char_probs
         }
     
+    @torch.inference_mode()
     def generate(self, audio, gen_method, simple_model=False):
         if isinstance(gen_method, str):
             gen_method = qwenaudio.prompts.prompt_mapper[gen_method]
@@ -310,6 +319,7 @@ class ScoreProcessorV3:
             self.prompt_sample = json.load(fp)
         print("load ScoreProcessorV3 done")
 
+    @torch.inference_mode()
     def generate_text(self, audio, gen_method, simple_model=False):
         if isinstance(gen_method, str):
             gen_method = qwenaudio.prompts.prompt_mapper[gen_method]
@@ -335,7 +345,7 @@ class ScoreProcessorV3:
         ]
         conversation_text = self.processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
         inputs = self.processor(text=conversation_text, audio=audio, return_tensors="pt", padding=True).to("cuda")
-        generate_ids = self.text_gen.generate(**inputs, max_length=4096)
+        generate_ids = self.text_gen.generate(**inputs, max_length=qwenaudio.config.max_length)
         generate_ids = generate_ids[:, inputs.input_ids.size(1):]
         text_by_genmodel = self.processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
         return {
@@ -343,6 +353,7 @@ class ScoreProcessorV3:
             "text": text_by_genmodel
         }
 
+    @torch.inference_mode()
     def generate_score(self, audio, gen_method, text):
         if isinstance(gen_method, str):
             gen_method = qwenaudio.prompts.prompt_mapper[gen_method]
@@ -366,6 +377,7 @@ class ScoreProcessorV3:
 
         return {"score":out_id+1, "prompt": conversation_text}
     
+    @torch.inference_mode()
     def generate(self, audio, gen_method, simple_model=False):
         if isinstance(gen_method, str):
             gen_method = qwenaudio.prompts.prompt_mapper[gen_method]
