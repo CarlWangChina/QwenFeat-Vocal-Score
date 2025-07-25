@@ -94,7 +94,7 @@ if __name__ == '__main__':
             print(tts_user)
             # train(qwenaudio.config.tts_appid, qwenaudio.config.tts_access_token, item["path"], item["model_id"])
             res = get_status(tts_user["tts_appid"], tts_user["tts_access_token"], item["model_id"])
-            if res==0:
+            if res==0 or "force" in item and item["force"] == True:
                 train(tts_user["tts_appid"], tts_user["tts_access_token"], item["path"], item["model_id"])
                 time.sleep(10)
     # train(qwenaudio.config.tts_appid, qwenaudio.config.tts_access_token, "/home/w-4090/projects/qwenaudio/data/zjl300s.MP3", "S_NcV7oCTw1")
