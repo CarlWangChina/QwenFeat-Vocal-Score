@@ -12,6 +12,22 @@ import requests
 
 dashscope.api_key = qwenaudio.config.api_key
 
+# 加载模型字典
+singerid_to_model = dict()
+model_auth_conf = dict()
+with open("config/vocal_id.json") as f:
+    singerid_list = json.load(f)
+    for item in singerid_list["vocal_id"]:
+        # print(item)
+        model_id = item["model_id"]
+        singer_id = item["id"]
+        model_user = item["user"]
+        singerid_to_model[singer_id] = (model_id, model_user)
+        # train(qwenaudio.config.tts_appid, qwenaudio.config.tts_access_token, item["path"], item["model_id"])
+    for item in singerid_list["auth"]:
+        user_id = item["id"]
+        model_auth_conf[user_id] = item
+
 def split_text(text):
     # 使用正则表达式匹配数字后跟顿号的模式（中间可能有空格或tab）
     pattern = r'\d+[ \t]*、'
@@ -30,7 +46,7 @@ def split_text(text):
     
     return result
 
-def generate_vocal_critique(input_comments):
+def generate_vocal_critique(input_comments, author_mode=False):
     """
     生成声乐评估报告和建议
     
@@ -54,7 +70,20 @@ def generate_vocal_critique(input_comments):
         critique += f"{dim}分数: {score}, 缺点: {comment}\n"
     
     # 构建Prompt
-    prompt_template = f"""
+    if author_mode:
+        prompt_template = f"""
+你将扮演一个歌唱比赛的评委,声乐领域的教授,同时也是这首歌的作者,目前一个选手演唱后, 作为评委的你听完已经初步发现了其以下缺点:
+“{critique}”
+
+你需要思考后, 严格按照以下格式输出内容:
+1、一段将4维度合并后的总结性概括评语,限制在50字以内的中文,不需要包含关于题目的任何信息,例如不需要把"50字以内"这句话本身写到输出中
+2、针对4个维度上的优点和缺点展开详述, 你需要基于刚才发现的4个维度下的缺点,分别进行润色,在保持原来含义的同时让语言更加多样性,更符合你作为评委的身份和咖位,输出100-150字的中文.
+3、针对目前她/他的歌声中存在的问题, 你有什么他在未来练习和演唱中的建议呢? 请你对症下药,输出200-300字中文的具体的建议,要求言之有物,让对方感到你说的很有道理, 对他提升很有帮助.
+
+输出时需要在文本中体现出你是这首歌的作者，例如在第一条的总结性概括评语的开头添加“哎哟，你在唱我的歌呀”等等。
+"""
+    else:
+        prompt_template = f"""
 你将扮演一个歌唱比赛的评委,声乐领域的教授,目前一个选手演唱后, 作为评委的你听完已经初步发现了其以下缺点:
 “{critique}”
 
@@ -76,32 +105,40 @@ def generate_vocal_critique(input_comments):
         summary_line = split_text(full_report)[0]
         summary_comment = summary_line.replace('1、', '').replace('\n', '').strip()
         
-        return True, full_report, summary_comment
+        return {"status":True, "full":full_report, "summary":summary_comment}
     else:
         # print(f"报告生成失败！状态码: {response.status_code}")
-        return False, None, None
+        return {"status":False, "full":None, "summary":None}
     
-def synthesize_speech(summary_comment):
+def synthesize_speech(summary_comment, singer_id="0"):
     """
     合成评委语音
     
     返回: (success, message) 元组
     """
-    api_url = f"https://{qwenaudio.config.tts_host}/api/v1/tts"
 
-    header = {"Authorization": f"Bearer;{qwenaudio.config.tts_access_token}"}
+    if singer_id in singerid_to_model:
+        tts_model = singerid_to_model[singer_id]
+    else:
+        tts_model = singerid_to_model["0"]
+    
+    
+    tts_uid = tts_model[1]
+    tts_user = model_auth_conf[tts_uid]
+    header = {"Authorization": f"Bearer;{tts_user["tts_access_token"]}"}
 
+    api_url = f"https://{tts_user["tts_host"]}/api/v1/tts"
     request_json = {
         "app": {
-            "appid": qwenaudio.config.tts_appid,
-            "token": qwenaudio.config.tts_access_token,
-            "cluster": qwenaudio.config.tts_cluster
+            "appid": tts_user["tts_appid"],
+            "token": tts_user["tts_access_token"],
+            "cluster": tts_user["tts_cluster"]
         },
         "user": {
             "uid": "388808087185088"
         },
         "audio": {
-            "voice_type": qwenaudio.config.tts_voice_type,
+            "voice_type": tts_model[0],
             "encoding": "mp3",
             "speed_ratio": 1.0,
             "volume_ratio": 1.0,

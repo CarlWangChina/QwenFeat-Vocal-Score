@@ -9,6 +9,7 @@ import multiprocessing
 from concurrent.futures import ProcessPoolExecutor
 import functools
 import itertools
+import logging
 
 ROOT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.join(ROOT_PATH, "src"))
@@ -16,6 +17,11 @@ sys.path.append(os.path.join(ROOT_PATH, "src"))
 import qwenaudio.processor
 import qwenaudio.prompts
 import qwenaudio.gen_final_text
+
+# 日志配置
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 # GPU设备配置（根据实际GPU数量调整）
 GPU_DEVICES = [7]
@@ -35,15 +41,16 @@ class ProcessorWorker:
 
     def _init_processor(self):
         """在指定GPU上初始化处理器"""
-        print(f"Initializing processor on GPU {self.gpu_id}...")
+        logging.info(f"Initializing processor on GPU {self.gpu_id}...")
         self.processor = qwenaudio.processor.create_processor(
             "ckpts/generator-lora-32-16-scoreonly-f16/best_model_epoch_13/lora_weights",
             "ckpts/generator-lora-32-16-textonly-simple-v2-int4/best_model_epoch_16/lora_weights"
         )
         print(f"Processor on GPU {self.gpu_id} initialized.")
 
-    def process_audio(self, audio_bytes, get_final_text=False, render_final_text=False, process_steps=[0,1,2,3]):
+    def process_audio(self, audio_bytes, get_final_text=False, render_final_text=False, process_steps=[0,1,2,3], singer_id="0"):
         """处理音频数据"""
+        logging.info(f"Processing audio on GPU {self.gpu_id} process_steps={process_steps} get_final_text={get_final_text} render_final_text={render_final_text} singer_id={singer_id}")
         try:
             with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as tmp_file:
                 tmp_file.write(audio_bytes)
@@ -66,9 +73,11 @@ class ProcessorWorker:
                     result[qwenaudio.prompts.prompt_mapper_reverse[i]] = val
                 
                 if get_final_text:
-                    result["final_text"] = qwenaudio.gen_final_text.generate_vocal_critique(result_to_gen)
+                    result["final_text"] = qwenaudio.gen_final_text.generate_vocal_critique(result_to_gen, author_mode=singer_id in qwenaudio.gen_final_text.singerid_to_model)
                     if render_final_text:
-                        result["speech"] = qwenaudio.gen_final_text.synthesize_speech(result["final_text"][2])
+                        result["speech"] = qwenaudio.gen_final_text.synthesize_speech(result["final_text"]["summary"], singer_id)
+                        result["singer_id"] = singer_id
+                        # print("singer_id", singer_id)
                     
                 return result
         except Exception as e:
@@ -111,12 +120,12 @@ def init_worker_process(gpu_id):
     global _worker
     _worker = ProcessorWorker(gpu_id)
 
-def process_audio_in_worker(audio_bytes, get_final_text=False, render_final_text=False, process_steps=[0,1,2,3]):
+def process_audio_in_worker(audio_bytes, get_final_text=False, render_final_text=False, process_steps=[0,1,2,3], singer_id="0"):
     """在工作进程中处理音频"""
     global _worker
-    return _worker.process_audio(audio_bytes, get_final_text=get_final_text, render_final_text=render_final_text, process_steps=process_steps)
+    return _worker.process_audio(audio_bytes, get_final_text=get_final_text, render_final_text=render_final_text, process_steps=process_steps, singer_id=singer_id)
 
-async def process_audio_bytes(audio_bytes, get_final_text, render_final_text, process_steps):
+async def process_audio_bytes(audio_bytes, get_final_text, render_final_text, process_steps, singer_id):
     """处理音频字节的核心逻辑"""
     global worker_round_robin
     
@@ -133,7 +142,7 @@ async def process_audio_bytes(audio_bytes, get_final_text, render_final_text, pr
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(
         executor,
-        functools.partial(process_audio_in_worker, audio_bytes, get_final_text, render_final_text, list(process_steps_id))
+        functools.partial(process_audio_in_worker, audio_bytes, get_final_text, render_final_text, list(process_steps_id), singer_id)
     )
 
 async def audio_handler(request):
@@ -149,8 +158,9 @@ async def audio_handler(request):
         get_final_text = request.query.get("get_final_text", "false").lower() in ["true", "1", "yes"]
         render_final_text = request.query.get("render_final_text", "false").lower() in ["true", "1", "yes"]
         process_steps = request.query.get("process_steps", "0123").lower()
+        singer_id = request.query.get("singer_id", "0")
         
-        result = await process_audio_bytes(audio_bytes, get_final_text, render_final_text, process_steps)
+        result = await process_audio_bytes(audio_bytes, get_final_text, render_final_text, process_steps, singer_id)
         return web.json_response(result)
 
     except Exception as e:
@@ -178,8 +188,9 @@ async def local_audio_handler(request):
         get_final_text = request.query.get("get_final_text", "false").lower() in ["true", "1", "yes"]
         render_final_text = request.query.get("render_final_text", "false").lower() in ["true", "1", "yes"]
         process_steps = request.query.get("process_steps", "0123").lower()
+        singer_id = request.query.get("singer_id", "0")
         
-        result = await process_audio_bytes(audio_bytes, get_final_text, render_final_text, process_steps)
+        result = await process_audio_bytes(audio_bytes, get_final_text, render_final_text, process_steps, singer_id)
         return web.json_response(result)
 
     except FileNotFoundError:
