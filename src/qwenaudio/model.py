@@ -21,16 +21,19 @@ from peft import LoraConfig, get_peft_model, TaskType, PeftModel
 #             model.model.load_state_dict(states)
 
 class QwenAudioScoreModel(torch.nn.Module):
-    def __init__(self, output_num=2, hidden_dim=128, use_lora=True, freeze_weight=True, lora_r=16, lora_alpha=16, device="cuda"):
+    def __init__(self, output_num=2, hidden_dim=128, use_lora=True, freeze_weight=True, lora_r=16, lora_alpha=16, device="cuda", base_model=None):
         super().__init__()
         self.device = device
         self.hidden_dim = hidden_dim
         # 加载半精度主模型
-        self.model = Qwen2AudioForConditionalGeneration.from_pretrained(
-            "Qwen/Qwen2-Audio-7B-Instruct",
-            torch_dtype=torch.float16,
-            device_map=device
-        )
+        if base_model is None:
+            self.model = Qwen2AudioForConditionalGeneration.from_pretrained(
+                "Qwen/Qwen2-Audio-7B-Instruct",
+                torch_dtype=torch.float16,
+                device_map=device
+            )
+        else:
+            self.model = base_model
         
         if use_lora:
             # 配置LoRA参数

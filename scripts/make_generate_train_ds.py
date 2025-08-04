@@ -31,7 +31,7 @@ if __name__ == "__main__":
         # 从表格提取4个分数和评语
         # print(row["辅助标记"])
         # print(row["record_id"])
-        if row["辅助标记"]!="*":
+        if row["辅助标记"]!="*" and row["评级打分者姓名/昵称"]=="阿乐":
             score0 = int(row["“技巧”维度打分"])
             score1 = int(row["“情感”维度打分"])
             score2 = int(row["“音色”维度打分"])
@@ -55,8 +55,8 @@ if __name__ == "__main__":
                 [score3, comment3],
             ]
 
-    with open("/home/w-4090/projects/qwenaudio/data/gen.json", "w") as f:
-        json.dump(res, f, ensure_ascii=False, indent=4)
+    # with open("/home/w-4090/projects/qwenaudio/data/gen.json", "w") as f:
+    #     json.dump(res, f, ensure_ascii=False, indent=4)
 
-    with open("/home/w-4090/projects/qwenaudio/data/gen2.json", "w") as f:
+    with open("/home/w-4090/projects/qwenaudio/data/gen_al.json", "w") as f:
         json.dump(res2, f, ensure_ascii=False, indent=4)

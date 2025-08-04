@@ -68,11 +68,13 @@ def encode_audio_file(file_path):
         return encoded_data, audio_format
 
 if __name__ == '__main__':
-    train(qwenaudio.config.tts_appid, qwenaudio.config.tts_access_token, "/home/w-4090/projects/qwenaudio/data/zjl300s.MP3", "S_NcV7oCTw1")
-    time.sleep(60)
+    # train(qwenaudio.config.tts_appid, qwenaudio.config.tts_access_token, "/home/w-4090/projects/qwenaudio/data/zjl300s.MP3", "S_NcV7oCTw1")
+    # time.sleep(60)
     get_status(appid=qwenaudio.config.tts_appid, token=qwenaudio.config.tts_access_token, spk_id="S_NcV7oCTw1")
     try:
-        resp = qwenaudio.gen_final_text.synthesize_speech("音色饱满但层次不足，情感表达真挚却欠缺技巧修饰，气息控制尚可但尾音不稳，整体表现有潜力但基本功仍需夯实。")
+        resp = qwenaudio.gen_final_text.synthesize_speech(
+            "音色饱满但层次不足，情感表达真挚却欠缺技巧修饰，气息控制尚可但尾音不稳，整体表现有潜力但基本功仍需夯实。",
+            speed_ratio=0.5)
         print(f"resp body: \n{resp}")
         if "data" in resp:
             data = resp["data"]

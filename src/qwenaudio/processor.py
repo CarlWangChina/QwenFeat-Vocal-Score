@@ -167,15 +167,20 @@ class ScoreProcessor:
         return text_1
         
 class ScoreProcessorV2:
-    def __init__(self, score_model_path, text_model_path, processor_name="Qwen/Qwen2-Audio-7B-Instruct"):
+    def __init__(self, score_model_path, text_model_path, processor_name="Qwen/Qwen2-Audio-7B-Instruct", base_model=None):
         self.processor = Qwen2AudioProcessor.from_pretrained(processor_name, sample_rate=16000)
-        self.ori_model = Qwen2AudioForConditionalGeneration.from_pretrained(
-            "Qwen/Qwen2-Audio-7B-Instruct",
-            # torch_dtype=torch.bfloat16,
-            # load_in_4bit=True
-            # load_in_8bit=True
-        )
-        self.ori_model.half()
+        self.top2_mode = True
+        self.top2_t = 0.9
+        if base_model is None:
+            self.ori_model = Qwen2AudioForConditionalGeneration.from_pretrained(
+                "Qwen/Qwen2-Audio-7B-Instruct",
+                # torch_dtype=torch.bfloat16,
+                # load_in_4bit=True
+                # load_in_8bit=True
+            )
+            self.ori_model.half()
+        else:
+            self.ori_model = base_model
         self.text_gen = PeftModel.from_pretrained(self.ori_model, text_model_path)
         self.score_gen = PeftModel.from_pretrained(self.ori_model, score_model_path)
         self.ori_model.to("cuda")
@@ -280,10 +285,26 @@ class ScoreProcessorV2:
 
             # 现在char_probs包含每个数字字符的概率
             # print("数字概率分布:", char_probs)
+
+            # 构建列表
+            char_probs_list = list(char_probs.items())
+
+            # 按概率值降序排序
+            char_probs_list.sort(key=lambda x: x[1], reverse=True)
+
+            if self.top2_mode:
+                # 如果第一位是3且概率没到0.9就选择第二位
+                if char_probs_list[0][0] == "3" and char_probs_list[0][1] < self.top2_t:
+                    char_probs_max_key = char_probs_list[1][0]
+                else:
+                    char_probs_max_key = char_probs_list[0][0]
+            else:
+                char_probs_max_key = max(char_probs, key=char_probs.get)
             
-            char_probs_max_key = max(char_probs, key=char_probs.get)
+            # char_probs_max_key = max(char_probs, key=char_probs.get)
             # print("预测的分数是：", char_probs_max_key)
             score = int(char_probs_max_key)
+            print(char_probs)
 
         return {
             "prompt": conversation_text,
@@ -301,7 +322,7 @@ class ScoreProcessorV2:
         return score
 
 class ScoreProcessorV3:
-    def __init__(self, score_model_path, text_model_path, processor_name="Qwen/Qwen2-Audio-7B-Instruct"):
+    def __init__(self, score_model_path, text_model_path, processor_name="Qwen/Qwen2-Audio-7B-Instruct", base_model=None):
         self.processor = Qwen2AudioProcessor.from_pretrained(processor_name, sample_rate=16000)
         self.model = QwenAudioScoreModel(
             output_num=5, 
@@ -314,6 +335,8 @@ class ScoreProcessorV3:
         self.model.eval()
         self.text_gen.to("cuda")
         self.text_gen.eval()
+        self.top2_mode = True
+        self.top2_t = 0.9
         
         with open("data/train_gen/prompt_set.json") as fp:
             self.prompt_sample = json.load(fp)
@@ -387,13 +410,23 @@ class ScoreProcessorV3:
         score["text"] = str(score["score"])+"分，"+gen_text['text']
         return score
 
-def create_processor(score_model_path, text_model_path):
+def create_processor(score_model_path, text_model_path, base_model=None):
     print("create_processor")
     print("score_model_path", score_model_path)
     print("text_model_path", text_model_path)
     if not os.path.exists(score_model_path) or not os.path.exists(text_model_path):
         raise FileNotFoundError("model not found")
     elif os.path.exists(os.path.join(score_model_path,"head.pt")):
-        return ScoreProcessorV3(score_model_path, text_model_path)
+        return ScoreProcessorV3(score_model_path, text_model_path, base_model=base_model)
     else:
-        return ScoreProcessorV2(score_model_path, text_model_path)
+        return ScoreProcessorV2(score_model_path, text_model_path, base_model=base_model)
+
+class ProcessorGroup:
+    def __init__(self, processor_name="Qwen/Qwen2-Audio-7B-Instruct"):
+        self.ori_model = Qwen2AudioForConditionalGeneration.from_pretrained(
+                processor_name
+            )
+        self.ori_model.half()
+        self.models = []
+    def add(self, score_model_path, text_model_path):
+        self.models.append(create_processor(score_model_path, text_model_path, base_model=self.ori_model))

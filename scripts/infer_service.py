@@ -48,7 +48,7 @@ class ProcessorWorker:
         )
         print(f"Processor on GPU {self.gpu_id} initialized.")
 
-    def process_audio(self, audio_bytes, get_final_text=False, render_final_text=False, process_steps=[0,1,2,3], singer_id="0"):
+    def process_audio(self, audio_bytes, get_final_text=False, render_final_text=False, process_steps=[0,1,2,3], singer_id="0", speed_ratio=1.0):
         """处理音频数据"""
         logging.info(f"Processing audio on GPU {self.gpu_id} process_steps={process_steps} get_final_text={get_final_text} render_final_text={render_final_text} singer_id={singer_id}")
         try:
@@ -75,8 +75,9 @@ class ProcessorWorker:
                 if get_final_text:
                     result["final_text"] = qwenaudio.gen_final_text.generate_vocal_critique(result_to_gen, author_mode=singer_id in qwenaudio.gen_final_text.singerid_to_model)
                     if render_final_text:
-                        result["speech"] = qwenaudio.gen_final_text.synthesize_speech(result["final_text"]["summary"], singer_id)
+                        result["speech"] = qwenaudio.gen_final_text.synthesize_speech(result["final_text"]["summary"], singer_id=singer_id, speed_ratio=speed_ratio)
                         result["singer_id"] = singer_id
+                        result["speech_speed_ratio"] = speed_ratio
                         # print("singer_id", singer_id)
                     
                 return result
@@ -120,12 +121,12 @@ def init_worker_process(gpu_id):
     global _worker
     _worker = ProcessorWorker(gpu_id)
 
-def process_audio_in_worker(audio_bytes, get_final_text=False, render_final_text=False, process_steps=[0,1,2,3], singer_id="0"):
+def process_audio_in_worker(audio_bytes, get_final_text=False, render_final_text=False, process_steps=[0,1,2,3], singer_id="0", speed_ratio=1.0):
     """在工作进程中处理音频"""
     global _worker
-    return _worker.process_audio(audio_bytes, get_final_text=get_final_text, render_final_text=render_final_text, process_steps=process_steps, singer_id=singer_id)
+    return _worker.process_audio(audio_bytes, get_final_text=get_final_text, render_final_text=render_final_text, process_steps=process_steps, singer_id=singer_id, speed_ratio=speed_ratio)
 
-async def process_audio_bytes(audio_bytes, get_final_text, render_final_text, process_steps, singer_id):
+async def process_audio_bytes(audio_bytes, get_final_text, render_final_text, process_steps, singer_id, speed_ratio):
     """处理音频字节的核心逻辑"""
     global worker_round_robin
     
@@ -142,7 +143,7 @@ async def process_audio_bytes(audio_bytes, get_final_text, render_final_text, pr
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(
         executor,
-        functools.partial(process_audio_in_worker, audio_bytes, get_final_text, render_final_text, list(process_steps_id), singer_id)
+        functools.partial(process_audio_in_worker, audio_bytes, get_final_text, render_final_text, list(process_steps_id), singer_id, speed_ratio)
     )
 
 async def audio_handler(request):
@@ -159,8 +160,9 @@ async def audio_handler(request):
         render_final_text = request.query.get("render_final_text", "false").lower() in ["true", "1", "yes"]
         process_steps = request.query.get("process_steps", "0123").lower()
         singer_id = request.query.get("singer_id", "0")
+        speed_ratio = float(request.query.get("speed_ratio", "1.3"))
         
-        result = await process_audio_bytes(audio_bytes, get_final_text, render_final_text, process_steps, singer_id)
+        result = await process_audio_bytes(audio_bytes, get_final_text, render_final_text, process_steps, singer_id, speed_ratio)
         return web.json_response(result)
 
     except Exception as e:
@@ -189,8 +191,9 @@ async def local_audio_handler(request):
         render_final_text = request.query.get("render_final_text", "false").lower() in ["true", "1", "yes"]
         process_steps = request.query.get("process_steps", "0123").lower()
         singer_id = request.query.get("singer_id", "0")
+        speed_ratio = float(request.query.get("speed_ratio", "1.3"))
         
-        result = await process_audio_bytes(audio_bytes, get_final_text, render_final_text, process_steps, singer_id)
+        result = await process_audio_bytes(audio_bytes, get_final_text, render_final_text, process_steps, singer_id, speed_ratio)
         return web.json_response(result)
 
     except FileNotFoundError:

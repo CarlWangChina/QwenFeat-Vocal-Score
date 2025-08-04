@@ -28,7 +28,9 @@ if __name__=="__main__":
             out_path = f"outputs/test_26/{singer_id}_unknow.mp3"
         if not os.path.exists(out_path):
             resp = qwenaudio.gen_final_text.synthesize_speech(
-                "音色饱满但层次不足，情感表达真挚却欠缺技巧修饰，气息控制尚可但尾音不稳，整体表现有潜力但基本功仍需夯实。", singer_id=str(singer_id))
+                "音色饱满但层次不足，情感表达真挚却欠缺技巧修饰，气息控制尚可但尾音不稳，整体表现有潜力但基本功仍需夯实。", 
+                singer_id=str(singer_id),
+                speed_ratio=1.0)
             if "data" in resp:
                 data = resp["data"]
                 file_to_save = open(out_path, "wb")

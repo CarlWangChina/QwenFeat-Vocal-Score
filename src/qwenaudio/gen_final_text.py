@@ -110,7 +110,7 @@ def generate_vocal_critique(input_comments, author_mode=False):
         # print(f"报告生成失败！状态码: {response.status_code}")
         return {"status":False, "full":None, "summary":None}
     
-def synthesize_speech(summary_comment, singer_id="0"):
+def synthesize_speech(summary_comment, singer_id="0", speed_ratio=1.0, volume_ratio=1.0, pitch_ratio=1.0):
     """
     合成评委语音
     
@@ -140,9 +140,9 @@ def synthesize_speech(summary_comment, singer_id="0"):
         "audio": {
             "voice_type": tts_model[0],
             "encoding": "mp3",
-            "speed_ratio": 1.0,
-            "volume_ratio": 1.0,
-            "pitch_ratio": 1.0,
+            "speed_ratio": speed_ratio,
+            "volume_ratio": volume_ratio,
+            "pitch_ratio": pitch_ratio,
         },
         "request": {
             "reqid": str(uuid.uuid4()),

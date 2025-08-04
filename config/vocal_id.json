@@ -80,7 +80,7 @@
         {
             "id": "11",
             "name": "王力宏.MP3",
-            "path": "data/所有人明星说话/王力宏.MP3",
+            "path": "data/音色替换/王力宏).WAV",
             "model_id": "S_iEvtxxkz1",
             "user":2
         },
@@ -122,7 +122,7 @@
         {
             "id": "17",
             "name": "王心凌.mp3",
-            "path": "data/所有人明星说话/王心凌.mp3",
+            "path": "data/音色替换/王心凌.WAV",
             "model_id": "S_CQ9r21lz1",
             "user":2
         },

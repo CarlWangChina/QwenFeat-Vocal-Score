@@ -162,15 +162,6 @@ if __name__ == "__main__":
         json.dump(data_train, f, ensure_ascii=False, indent=4)
     with open(os.path.join(ROOT_PATH, "data/train_gen/test.json"), 'w') as f:
         json.dump(data_test, f, ensure_ascii=False, indent=4)
-    
-    data_train = data_gen_score_by_text[:int(len(data_gen_score_by_text)*0.8)]
-    data_test = data_gen_score_by_text[int(len(data_gen_score_by_text)*0.8):]
-    with open(os.path.join(ROOT_PATH, "data/train_gen/train_score_by_text.json"), 'w') as f:
-        json.dump(data_train, f, ensure_ascii=False, indent=4)
-    with open(os.path.join(ROOT_PATH, "data/train_gen/test_score_by_text.json"), 'w') as f:
-        json.dump(data_test, f, ensure_ascii=False, indent=4)
-    with open(os.path.join(ROOT_PATH, "data/train_gen/full_score_by_text.json"), 'w') as f:
-        json.dump(data_gen_score_by_text, f, ensure_ascii=False, indent=4)
 
     data_train = data_gen_text_simple[:int(len(data_gen_text_simple)*0.8)]
     data_test = data_gen_text_simple[int(len(data_gen_text_simple)*0.8):]
