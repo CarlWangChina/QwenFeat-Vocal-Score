@@ -11,7 +11,6 @@ from torch.optim import AdamW
 from torch.nn import CrossEntropyLoss, BCELoss, MSELoss
 from tqdm import tqdm
 import numpy as np
-from transformers import AutoProcessor, Qwen2AudioForConditionalGeneration, Qwen2AudioProcessor
 import logging
 import math
 from collections import defaultdict
@@ -19,8 +18,7 @@ from collections import defaultdict
 ROOT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.join(ROOT_PATH, "src"))
 
-# 注意：这里假设 qwenaudio.model 在您的路径中可用
-from qwenaudio.model import QwenAudioScoreModel, QwenAudioTowerScoreModel
+from qwenaudio.model import AudioFeatClassifier
 import qwenaudio.audio_cut
 
 # 扩展交叉熵损失（示例权重：距离越远权重越大）
@@ -59,21 +57,16 @@ def calculate_weights(json_path):
     }
 
 class AudioDataset(Dataset):
-    def __init__(self, json_path, processor, max_length=10):
+    def __init__(self, json_path, max_length=10):
         """
         音频数据集加载器
         Args:
             jsonl_path: 训练数据路径 (JSONL格式)
-            processor: Qwen2音频处理器
             max_length: 最大音频长度(秒)
         """
-        self.processor = processor
-        self.sampling_rate = processor.feature_extractor.sampling_rate
-        self.max_length_second = max_length
-        self.max_length = max_length * self.sampling_rate  # 转换为采样点数
+        self.audio_feat_dir = "/home/w-4090/projects/qwenaudio/data/audio_feat"
         # if dist.get_rank() == 0:
-        print(f"Loading dataset from {json_path} with max length {self.max_length} samples")
-        print("sampling_rate:", self.sampling_rate)
+        print(f"Loading dataset from {json_path} ")
         
         with open(json_path, 'r') as f:
             self.data = json.load(f)
@@ -87,89 +80,110 @@ class AudioDataset(Dataset):
         item = self.data[idx]
         audio_path = item["audio"]
         score = int(item["score"])-1
-        text_prompt = item["text"]
         assert 0 <= score < 5, "Score must be between 0 and 4"
         
-        # 加载音频并裁剪/填充
-        # audio, _ = librosa.load(audio_path, sr=self.sampling_rate, mono=True)
-        audio, _ = qwenaudio.audio_cut.random_cut(audio_path, self.sampling_rate, segment_duration=self.max_length_second)
-        if len(audio) > self.max_length:
-            audio = audio[:self.max_length]
-        elif len(audio) < self.max_length:
-            audio = np.pad(audio, (0, max(0, self.max_length - len(audio))))
+        audio_path_arr = audio_path.split("/")
+        feat_dir = os.path.join(self.audio_feat_dir, audio_path_arr[-2]+"-"+audio_path_arr[-1].split(".")[0])
+
+        pit_path = os.path.join(feat_dir, "pit.npy")
+        ppg_path = os.path.join(feat_dir, "ppg.npy")
+        vec_path = os.path.join(feat_dir, "vec.npy")
         
-        # 提取特征
-        # inputs = self.processor(text=text_prompt, audios=[audio], return_tensors="pt", padding=True, sample_rate=self.sampling_rate)
-        # inputs = self.processor.feature_extractor(
-        #             audio, 
-        #             return_attention_mask=True,
-        #             sampling_rate=self.sampling_rate,
-        #             return_tensors="pt"
-        #         )
+        ppg = np.load(ppg_path)
+        ppg = np.repeat(ppg, 2, 0)  # 320 PPG -> 160 * 2
+        ppg = torch.FloatTensor(ppg)
+        # ppg = torch.zeros_like(ppg)
+
+        vec = np.load(vec_path)
+        vec = np.repeat(vec, 2, 0)  # 320 PPG -> 160 * 2
+        vec = torch.FloatTensor(vec)
+        # vec = torch.zeros_like(vec)
+
+        pit = qwenaudio.audio_cut.load_csv_pitch(pit_path)
+        pit = torch.FloatTensor(pit)
+
+        len_pit = pit.size()[0]
+        len_vec = vec.size()[0]
+        len_ppg = ppg.size()[0]
+        len_min = min(len_pit, len_vec)
+        len_min = min(len_min, len_ppg)
+        pit = pit[:len_min]
+        vec = vec[:len_min, :]
+        ppg = ppg[:len_min, :]
+        pit = qwenaudio.audio_cut.f0_to_coarse(pit)
+
+        ppg = ppg.view(1, -1, 1280)
+        vec = vec.view(1, -1, 256)
+        pit = pit.view(1, -1)
 
         return {
-            "audio": audio,
             "audio_path": audio_path,
-            # "input_ids": inputs.input_ids,
-            # "attention_mask": inputs.attention_mask,
-            # "input_features": inputs.input_features,
-            # "feature_attention_mask": inputs.feature_attention_mask,
-            "text_prompt": text_prompt,
+            "pit": pit,
+            "vec": vec,
+            "ppg": ppg,
             "score": torch.tensor(score, dtype=torch.float32)
         }
 
-class QwenAudioTrainer:
-    def __init__(self, model, processor, train_json, val_json=None, device=None, local_rank=-1, world_size=-1):
+def chunk_tensors(tensor1, tensor2, tensor3, chunk_size=3000):
+    """
+    将三个Tensor按第二维度切割成指定大小的片段，并一起yield
+    
+    参数:
+        tensor1: torch.Size([1, N, 1280])
+        tensor2: torch.Size([1, N, 256])
+        tensor3: torch.Size([1, N])
+        chunk_size: 每个片段的长度 (默认3000)
+    
+    生成:
+        (seg1, seg2, seg3) 元组，每个都是切割后的片段
+    """
+    # 获取第二维度的总长度
+    total_len = tensor1.size(1)
+    
+    # 计算需要切割的片段数量
+    num_chunks = (total_len + chunk_size - 1) // chunk_size
+    
+    for i in range(num_chunks):
+        start = i * chunk_size
+        end = min(start + chunk_size, total_len)
+        
+        # 切割每个tensor
+        seg1 = tensor1[:, start:end, :]
+        seg2 = tensor2[:, start:end, :]
+        seg3 = tensor3[:, start:end]
+        
+        yield seg1, seg2, seg3
+
+class AudioTrainer:
+    def __init__(self, model, train_json, val_json=None, device=None, local_rank=-1, world_size=-1):
         """
         音频评分模型训练器（支持多卡训练）
         Args:
             model: QwenAudioScoreModel实例
-            processor: 音频处理器
             train_json: 训练集路径
             val_json: 验证集路径
             device: 训练设备 (自动选择GPU如果可用)
             local_rank: 分布式训练的本地进程编号
         """
         self.model = model
-        self.processor = processor
         self.local_rank = local_rank
         self.device = device
         self.world_size = world_size
+        self.output_num = 5
         
         # self.model.to(self.device)
 
         # 创建数据集
-        self.train_dataset = AudioDataset(train_json, processor)
-        self.val_dataset = AudioDataset(val_json, processor) if val_json else None
-        
-        # 根据任务类型配置训练参数
-        self.output_num = model.output_num
+        self.train_dataset = AudioDataset(train_json)
+        self.val_dataset = AudioDataset(val_json) if val_json else None
 
         self.classify_weight = []
         for i in range(self.output_num):
             self.classify_weight.append(self.train_dataset.weights["normalized_weights"][i+1])
         # self.classify_weight = torch.tensor(self.classify_weight).to(self.device)
 
-        if self.output_num >= 2:
-            self.criterion = CrossEntropyLoss()
-
-            # # 5个类别，权重矩阵设计为距离的倒数
-            # num_classes = 5
-            # weight_matrix = torch.ones((num_classes, num_classes))
-            # for i in range(num_classes):
-            #     for j in range(num_classes):
-            #         weight_matrix[i][j] = math.exp(abs(i - j))# * max(self.classify_weight[i], self.classify_weight[j])  # 距离越远权重越大
-            # # 归一化weight_matrix
-            # weight_matrix = weight_matrix / weight_matrix.sum(dim=1, keepdim=True)
-
-            # self.criterion = OrdinalCrossEntropy(num_classes, weight_matrix)
-            # self.criterion.weight_matrix = weight_matrix.to(self.device)
-            # print(self.criterion.weight_matrix)
-
-            self.metric_name = "Accuracy"
-        else:  # 回归任务
-            self.criterion = MSELoss()
-            self.metric_name = "MSE"
+        self.criterion = CrossEntropyLoss()
+        self.metric_name = "Accuracy"
         
         # 训练参数默认值
         self.batch_size = 8
@@ -227,20 +241,20 @@ class QwenAudioTrainer:
     
     def collate_fn(self, batch):
         """批处理函数"""
-        audios = [item["audio"] for item in batch]
-        # input_ids = [item["input_ids"] for item in batch]
-        # attention_mask = [item["attention_mask"] for item in batch]
-        # input_features = [item["input_features"] for item in batch]
-        # feature_attention_mask = [item["feature_attention_mask"] for item in batch]
+        audio_path = [item["audio_path"] for item in batch]
+        pit = [item["pit"] for item in batch]
+        vec = [item["vec"] for item in batch]
+        ppg = [item["ppg"] for item in batch]
+
+        # print(pit)
         
         scores = [item["score"] for item in batch]
         
         return {
-            "audio": audios,
-            # "input_ids": torch.cat(input_ids, dim=0),
-            # "attention_mask": torch.cat(attention_mask, dim=0),
-            # "input_features": torch.cat(input_features, dim=0),
-            # "feature_attention_mask": torch.cat(feature_attention_mask, dim=0),
+            "audio_path": audio_path,
+            "pit": torch.cat(pit, dim=0),
+            "vec": torch.cat(vec, dim=0),
+            "ppg": torch.cat(ppg, dim=0),
             "scores": torch.stack(scores)
         }
     
@@ -253,7 +267,7 @@ class QwenAudioTrainer:
         train_loader, val_loader, train_sampler = self.create_dataloaders()
         optimizer = AdamW(self.model.parameters(), lr=self.lr)
         
-        best_val_loss = float('inf')
+        best_val_acc = 0
         os.makedirs(self.save_dir, exist_ok=True)
         if self.local_rank in [-1, 0]:
             print(self.model)
@@ -305,11 +319,11 @@ class QwenAudioTrainer:
             val_metrics = {}
             if val_loader and self.local_rank in [-1, 0]:
                 val_metrics = self.evaluate(val_loader)
-                val_loss = val_metrics["loss"]
+                val_acc = val_metrics["acc_area"]
                 
                 # 保存最佳模型
-                if val_loss < best_val_loss:
-                    best_val_loss = val_loss
+                if val_acc > best_val_acc:
+                    best_val_acc = val_acc
                     self.save_model(f"best_model_epoch/{epoch+1}")
                     self.logger.info(f"Best model saved to {self.save_dir}/best_model_epoch/{epoch+1}.pt")
             
@@ -333,11 +347,9 @@ class QwenAudioTrainer:
     
     def train_step(self, batch, optimizer):
         # 准备输入数据
-        # input_ids = batch["input_ids"].to(self.device)
-        # attention_mask = batch["attention_mask"].to(self.device)
-        # input_features = batch["input_features"].to(self.device)
-        # feature_attention_mask = batch["feature_attention_mask"].to(self.device)
-        ft = self.processor.feature_extractor(batch["audio"], return_attention_mask=True, padding="max_length")
+        pit = batch["pit"].cuda()
+        vec = batch["vec"].cuda()
+        ppg = batch["ppg"].cuda()
         scores = batch["scores"].to(self.device)
 
         if self.output_num >= 2:
@@ -346,10 +358,19 @@ class QwenAudioTrainer:
             scores = scores.view(-1, 1)
             
         # 前向传播
-        # outputs = self.model(input_ids=input_ids, attention_mask=attention_mask, input_features=input_features, feature_attention_mask=feature_attention_mask)
-        outputs = self.model(torch.tensor(ft.input_features).cuda())
+        # loss = None
+        # count = 0
+        # for sub_ppg,sub_vec,sub_pit in chunk_tensors(ppg, vec, pit):
+        #     outputs = self.model(sub_ppg,sub_vec,sub_pit)
+        #     # 计算损失
+        #     if loss is None:
+        #         loss = self.criterion(outputs, scores)
+        #     else:
+        #         loss += self.criterion(outputs, scores)
+        #     count += 1
+        # loss = loss / count
         
-        # 计算损失
+        outputs = self.model(ppg, vec, pit)
         loss = self.criterion(outputs, scores)
         
         # 反向传播
@@ -373,9 +394,9 @@ class QwenAudioTrainer:
 
         with torch.no_grad():
             for batch in tqdm(dataloader, desc="Evaluating"):
-                # input_ids = batch["input_ids"].to(self.device)
-                # feature_attention_mask = batch["feature_attention_mask"].to(self.device)
-                ft = self.processor.feature_extractor(batch["audio"], return_attention_mask=True, padding="max_length")
+                pit = batch["pit"].to(self.device)
+                vec = batch["vec"].to(self.device)
+                ppg = batch["ppg"].to(self.device)
                 scores = batch["scores"].to(self.device)
 
                 if self.output_num >= 2:
@@ -384,7 +405,9 @@ class QwenAudioTrainer:
                     scores_for_loss = scores.view(-1, 1)
 
                 # outputs = self.model(input_ids=input_ids, attention_mask=attention_mask, input_features=input_features, feature_attention_mask=feature_attention_mask)
-                outputs = self.model(torch.tensor(ft.input_features).cuda())
+                # outputs = self.model(ppg, vec, pit)
+
+                outputs = self.model(ppg, vec, pit)
 
                 loss = self.criterion(outputs, scores_for_loss)
                 total_loss += loss.item()
@@ -442,4 +465,3 @@ class QwenAudioTrainer:
         model_to_save = self.model.module if isinstance(self.model, DDP) else self.model
         os.makedirs(self.save_dir, exist_ok=True)
         model_to_save.save_model(os.path.join(self.save_dir, filename))
-        self.processor.save_pretrained(os.path.join(self.save_dir, filename, "processor"))

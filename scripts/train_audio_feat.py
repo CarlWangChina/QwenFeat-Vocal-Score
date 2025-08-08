@@ -5,9 +5,8 @@ sys.path.append(os.path.join(ROOT_PATH, "src"))
 # print(sys.path)
 import torch
 import qwenaudio.model
-from qwenaudio.trainer_pf_score import QwenAudioTrainer,QwenAudioTowerScoreModel
+from qwenaudio.trainer_audio_feat import AudioTrainer
 from torch import distributed as dist
-from transformers import Qwen2AudioForConditionalGeneration, AutoProcessor, Qwen2AudioProcessor
 import torch.distributed as dist
 import argparse
 
@@ -28,20 +27,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # 初始化模型和处理器
-    processor = Qwen2AudioProcessor.from_pretrained("Qwen/Qwen2-Audio-7B-Instruct", sample_rate=16000)
-    model = QwenAudioTowerScoreModel()
+    model = qwenaudio.model.AudioFeatClassifier()
     if dist.get_rank() == 0:
         print(model)
-        for name, module in model.named_modules():
-            if isinstance(module, torch.nn.Linear):  # 仅检查全连接层
-                for param_name, param in module.named_parameters():
-                    if param.requires_grad:
-                        print(f"模块 {name} 的参数 {param_name} 未冻结")
 
     # 创建训练器
-    trainer = QwenAudioTrainer(
+    trainer = AudioTrainer(
         model=model,
-        processor=processor,
         train_json=args.train_set,
         val_json=args.val_set,
         device=device,
@@ -51,8 +43,8 @@ if __name__ == "__main__":
     
     # 配置训练参数
     trainer.batch_size = 1
-    trainer.lr = 3e-6
-    trainer.epochs = 30
+    trainer.lr = 3e-5
+    trainer.epochs = 90
     trainer.save_dir = args.save_dir
     
     # 开始训练
