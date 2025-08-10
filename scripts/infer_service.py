@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 # GPU设备配置（根据实际GPU数量调整）
-GPU_DEVICES = [7]
+GPU_DEVICES = [0]
 NUM_WORKERS = len(GPU_DEVICES)
 
 # 全局进程池
@@ -48,15 +48,18 @@ class ProcessorWorker:
         text_model = "ckpts/generator-lora-32-16-textonly-simple-v2-int4/best_model_epoch_16/lora_weights"
 
         logger.info(f"Loading model 1 on GPU {self.gpu_id}...")
-        self.processor.add("ckpts/train_ds_4_score_al/denoise/0/score/best_model_epoch/8", text_model)# 1. 专业技巧
+        self.processor.add("ckpts/train_ds_4_score_al/denoise/0/score/best_model_epoch/8", text_model)# 1. 专业技巧 qwen encoder+分类器
         logger.info(f"Loading model 2 on GPU {self.gpu_id}...")
-        self.processor.add("ckpts/train_ds_4_al/denoise/1/score/best_model_epoch_39/lora_weights", text_model)# 2. 情感表达
+        self.processor.add("ckpts/train_ds_4_al/denoise/1/score/best_model_epoch_39/lora_weights", "ckpts/train_ds_4_al/denoise/1/text/best_model_epoch_39/lora_weights")# 2. 情感表达 qwen2audio LLM 输出层; 4维度 top2
         logger.info(f"Loading model 3 on GPU {self.gpu_id}...")
-        self.processor.add("ckpts/train_ds_4_feat_score_al/denoise/2/score/best_model_epoch/25", text_model)# 3. 音色与音质
+        self.processor.add("ckpts/train_ds_4_feat_score_al/denoise/2/score/best_model_epoch/25", text_model)# 3. 音色与音质 samoye encoder+f0 to RNN1; 
         logger.info(f"Loading model 4 on GPU {self.gpu_id}...")
-        self.processor.add("ckpts/train_ds_4_feat_score_al/denoise/3/score/best_model_epoch/5", text_model)# 4. 气息控制
+        self.processor.add("ckpts/train_ds_4_feat_score_al/denoise/3/score/best_model_epoch/5", text_model)# 4. 气息控制 samoye encoder+f0 to RNN2;
         logger.info(f"Processor on GPU {self.gpu_id} initialized.")
-
+        self.processor.models[0].top2_mode = False
+        self.processor.models[1].top2_mode = True
+        self.processor.models[2].top2_mode = False
+        self.processor.models[3].top2_mode = False
     def process_audio(self, audio_bytes, get_final_text=False, render_final_text=False, process_steps=[0,1,2,3], singer_id="0", speed_ratio=1.0):
         """处理音频数据"""
         logging.info(f"Processing audio on GPU {self.gpu_id} process_steps={process_steps} get_final_text={get_final_text} render_final_text={render_final_text} singer_id={singer_id}")
