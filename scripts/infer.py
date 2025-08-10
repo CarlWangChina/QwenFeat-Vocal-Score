@@ -16,18 +16,23 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Audio Scoring CLI Tool")
     parser.add_argument("input_file", type=Path, help="Input audio file path")
     parser.add_argument("output_file", type=Path, help="Output JSON file path")
-    parser.add_argument("--score_path", type=str, help="Path to model checkpoint", default="ckpts/generator-lora-32-16-scoreonly-f16/best_model_epoch_13/lora_weights")
-    parser.add_argument("--generator_path", type=str, help="Path to generator weights", default="ckpts/generator-lora-32-16-textonly-simple-v2-int4/best_model_epoch_16/lora_weights")
     return parser.parse_args()
 
-def initialize_processor(score_path, generator_path):
+def initialize_processor():
     """初始化音频处理器"""
-    print(f"Initializing model from: {score_path}")
-    processor = qwenaudio.processor.create_processor(
-        score_path,
-        generator_path
-    )
-    print("Model initialized successfully")
+    print(f"Initializing model")
+    processor = qwenaudio.processor.ProcessorGroup()
+
+    text_model = "ckpts/generator-lora-32-16-textonly-simple-v2-int4/best_model_epoch_16/lora_weights"
+
+    processor.add("ckpts/train_ds_4_score_al/denoise/0/score/best_model_epoch/8", text_model)# 1. 专业技巧 qwen encoder+分类器
+    processor.add("ckpts/train_ds_4_al/denoise/1/score/best_model_epoch_39/lora_weights", "ckpts/train_ds_4_al/denoise/1/text/best_model_epoch_39/lora_weights")# 2. 情感表达 qwen2audio LLM 输出层; 4维度 top2
+    processor.add("ckpts/train_ds_4_feat_score_al/denoise/2/score/best_model_epoch/25", text_model)# 3. 音色与音质 samoye encoder+f0 to RNN1; 
+    processor.add("ckpts/train_ds_4_feat_score_al/denoise/3/score/best_model_epoch/5", text_model)# 4. 气息控制 samoye encoder+f0 to RNN2;
+    processor.models[0].top2_mode = False
+    processor.models[1].top2_mode = True
+    processor.models[2].top2_mode = False
+    processor.models[3].top2_mode = False
     return processor
 
 def process_audio(input_path, processor):
@@ -47,7 +52,7 @@ def process_audio(input_path, processor):
         # 生成评分
         result = {}
         for i in range(4):
-            result[qwenaudio.prompts.prompt_mapper_reverse[i]] = processor.generate(data, i, simple_model=True)
+            result[qwenaudio.prompts.prompt_mapper_reverse[i]] = processor.models[i].generate(data, i, simple_model=True)
         
         return result
 
@@ -61,7 +66,7 @@ def main():
     args.output_file.parent.mkdir(parents=True, exist_ok=True)
 
     # 初始化处理器
-    processor = initialize_processor(args.score_path, args.generator_path)
+    processor = initialize_processor()
 
     try:
         # 处理音频
