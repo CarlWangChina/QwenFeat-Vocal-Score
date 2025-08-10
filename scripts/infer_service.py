@@ -1,6 +1,7 @@
 import os
 import sys
 import asyncio
+import traceback
 from aiohttp import web
 import librosa
 import torch
@@ -42,11 +43,19 @@ class ProcessorWorker:
     def _init_processor(self):
         """在指定GPU上初始化处理器"""
         logging.info(f"Initializing processor on GPU {self.gpu_id}...")
-        self.processor = qwenaudio.processor.create_processor(
-            "ckpts/generator-lora-32-16-scoreonly-f16/best_model_epoch_13/lora_weights",
-            "ckpts/generator-lora-32-16-textonly-simple-v2-int4/best_model_epoch_16/lora_weights"
-        )
-        print(f"Processor on GPU {self.gpu_id} initialized.")
+        self.processor = qwenaudio.processor.ProcessorGroup()
+
+        text_model = "ckpts/generator-lora-32-16-textonly-simple-v2-int4/best_model_epoch_16/lora_weights"
+
+        logger.info(f"Loading model 1 on GPU {self.gpu_id}...")
+        self.processor.add("ckpts/train_ds_4_score_al/denoise/0/score/best_model_epoch/8", text_model)# 1. 专业技巧
+        logger.info(f"Loading model 2 on GPU {self.gpu_id}...")
+        self.processor.add("ckpts/train_ds_4_al/denoise/1/score/best_model_epoch_39/lora_weights", text_model)# 2. 情感表达
+        logger.info(f"Loading model 3 on GPU {self.gpu_id}...")
+        self.processor.add("ckpts/train_ds_4_feat_score_al/denoise/2/score/best_model_epoch/25", text_model)# 3. 音色与音质
+        logger.info(f"Loading model 4 on GPU {self.gpu_id}...")
+        self.processor.add("ckpts/train_ds_4_feat_score_al/denoise/3/score/best_model_epoch/5", text_model)# 4. 气息控制
+        logger.info(f"Processor on GPU {self.gpu_id} initialized.")
 
     def process_audio(self, audio_bytes, get_final_text=False, render_final_text=False, process_steps=[0,1,2,3], singer_id="0", speed_ratio=1.0):
         """处理音频数据"""
@@ -68,7 +77,8 @@ class ProcessorWorker:
                 result = {}
                 result_to_gen = {}
                 for i in process_steps:
-                    val = self.processor.generate(data, i, simple_model=True)
+                    print(self.processor.models[i], i , self.processor.models)
+                    val = self.processor.models[i].generate(data, i, simple_model=True)
                     result_to_gen[qwenaudio.prompts.prompt_mapper_reverse[i]] = (val["text"], val["score"])
                     result[qwenaudio.prompts.prompt_mapper_reverse[i]] = val
                 
@@ -83,6 +93,7 @@ class ProcessorWorker:
                 return result
         except Exception as e:
             err_str = f"Error processing audio: {str(e)}"
+            traceback.print_exc()
             return {"error": err_str}
 
 async def init_app(app):
@@ -166,6 +177,7 @@ async def audio_handler(request):
         return web.json_response(result)
 
     except Exception as e:
+        traceback.print_exc()
         return web.json_response({"error": str(e)}, status=500)
 
 async def local_audio_handler(request):
@@ -199,6 +211,7 @@ async def local_audio_handler(request):
     except FileNotFoundError:
         return web.json_response({"error": "File not found"}, status=404)
     except Exception as e:
+        traceback.print_exc()
         return web.json_response({"error": str(e)}, status=500)
 
 if __name__ == "__main__":

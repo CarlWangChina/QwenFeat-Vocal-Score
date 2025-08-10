@@ -22,8 +22,15 @@ import soundfile
 
 import qwenaudio.prompts 
 import qwenaudio.config 
-from qwenaudio.model import QwenAudioScoreModel
+from qwenaudio.model import QwenAudioScoreModel, FeatExtractor
 from qwenaudio.trainer_pf_score import AudioDataset
+
+default_procesosor = "Qwen/Qwen2-Audio-7B-Instruct"
+default_base_model = "Qwen/Qwen2-Audio-7B-Instruct"
+
+if os.path.exists("ckpts/Qwen2-Audio-7B-Instruct"):
+    default_procesosor = "ckpts/Qwen2-Audio-7B-Instruct"
+    default_base_model = "ckpts/Qwen2-Audio-7B-Instruct"
 
 def extract_first_digit_loop(text):
     for char in text:
@@ -47,8 +54,13 @@ class CustomStoppingCriteria(StoppingCriteria):
         return "\n" in decoded_text
     
 class ScoreProcessor:
-    def __init__(self, score_model_path, text_model_path, processor_name="Qwen/Qwen2-Audio-7B-Instruct"):
-        self.processor = Qwen2AudioProcessor.from_pretrained(processor_name, sample_rate=16000)
+    def __init__(self, score_model_path, text_model_path, processor=None):
+        if processor is None:
+            self.processor = Qwen2AudioProcessor.from_pretrained(default_procesosor, sample_rate=16000)
+        elif isinstance(processor, str):
+            self.processor = Qwen2AudioProcessor.from_pretrained(processor, sample_rate=16000)
+        else:
+            self.processor = processor
         self.model = QwenAudioScoreModel(
             output_num=5, 
             freeze_weight=False, 
@@ -169,13 +181,18 @@ class ScoreProcessor:
         return text_1
         
 class ScoreProcessorV2:
-    def __init__(self, score_model_path, text_model_path, processor_name="Qwen/Qwen2-Audio-7B-Instruct", base_model=None):
-        self.processor = Qwen2AudioProcessor.from_pretrained(processor_name, sample_rate=16000)
+    def __init__(self, score_model_path, text_model_path, processor=None, base_model=None):
+        if processor is None:
+            self.processor = Qwen2AudioProcessor.from_pretrained(default_procesosor, sample_rate=16000)
+        elif isinstance(processor, str):
+            self.processor = Qwen2AudioProcessor.from_pretrained(processor, sample_rate=16000)
+        else:
+            self.processor = processor
         self.top2_mode = True
         self.top2_t = 0.9
         if base_model is None:
             self.ori_model = Qwen2AudioForConditionalGeneration.from_pretrained(
-                "Qwen/Qwen2-Audio-7B-Instruct",
+                default_base_model,
                 # torch_dtype=torch.bfloat16,
                 # load_in_4bit=True
                 # load_in_8bit=True
@@ -324,8 +341,14 @@ class ScoreProcessorV2:
         return score
 
 class ScoreProcessorV3:
-    def __init__(self, score_model_path, text_model_path, processor_name="Qwen/Qwen2-Audio-7B-Instruct", base_model=None, method="qwen"):
-        self.processor = Qwen2AudioProcessor.from_pretrained(processor_name, sample_rate=16000)
+    def __init__(self, score_model_path, text_model_path, processor=None, base_model=None, feat_model=None, method="qwen"):
+        if processor is None:
+            self.processor = Qwen2AudioProcessor.from_pretrained(default_procesosor, sample_rate=16000)
+        elif isinstance(processor, str):
+            self.processor = Qwen2AudioProcessor.from_pretrained(processor, sample_rate=16000)
+        else:
+            self.processor = processor
+
         self.model = QwenAudioScoreModel(
             output_num=5, 
             freeze_weight=False, 
@@ -333,6 +356,7 @@ class ScoreProcessorV3:
             base_model=base_model)  # 注意：这里使用了正确的模型引用
         self.ori_model = self.model.model
         self.method = method
+        self.feat_model = feat_model
         if method == "qwen":
             self.model.load_ckpt(score_model_path)
         self.text_gen = PeftModel.from_pretrained(self.ori_model, text_model_path)
@@ -348,7 +372,7 @@ class ScoreProcessorV3:
             self.model.load_ckpt(score_model_path)
             self.model.to("cuda")
             self.model.eval()
-        elif method == "qwen_tower":
+        elif method == "audio_feat":
             self.model = qwenaudio.model.AudioFeatClassifier()
             self.model.load_ckpt(score_model_path)
             self.model.to("cuda")
@@ -412,12 +436,7 @@ class ScoreProcessorV3:
     @torch.inference_mode()
     def generate_score_audio_feat(self, audio, gen_method, text):
         # 创建临时文件写入音频
-        with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as temp_audio_file:
-            soundfile.write_wav(temp_audio_file.name, audio, 16000)
-            outputs = self.model.infer(temp_audio_file.name)[0]
-            out_id = outputs[0].argmax().item()
-
-            return {"score":out_id+1, "prompt": ""}
+        return self.model.infer(audio, self.feat_model)
         
     @torch.inference_mode()
     def generate_score_qwen(self, audio, gen_method, text):
@@ -453,7 +472,7 @@ class ScoreProcessorV3:
         score["text"] = str(score["score"])+"分，"+gen_text['text']
         return score
 
-def create_processor(score_model_path, text_model_path, base_model=None):
+def create_processor(score_model_path, text_model_path, base_model=None, feat_model=None, processor=None):
     print("create_processor")
     print("score_model_path", score_model_path)
     print("text_model_path", text_model_path)
@@ -461,23 +480,29 @@ def create_processor(score_model_path, text_model_path, base_model=None):
         raise FileNotFoundError("model not found")
     elif os.path.exists(os.path.join(score_model_path,"head.pt")):
         print("load qwen score model")
-        return ScoreProcessorV3(score_model_path, text_model_path, base_model=base_model, method="qwen")
+        return ScoreProcessorV3(score_model_path, text_model_path, base_model=base_model, method="qwen", processor=processor)
     elif os.path.exists(os.path.join(score_model_path,"adapter_config.json")):
         print("load qwen text gen model")
-        return ScoreProcessorV2(score_model_path, text_model_path, base_model=base_model)
+        return ScoreProcessorV2(score_model_path, text_model_path, base_model=base_model, processor=processor)
     elif os.path.exists(os.path.join(score_model_path,"model_weight.pt")):
         print("load audio feat model")
-        return ScoreProcessorV3(score_model_path, text_model_path, base_model=base_model, method="audio_feat")
+        return ScoreProcessorV3(score_model_path, text_model_path, base_model=base_model, method="audio_feat", feat_model=feat_model, processor=processor)
     elif os.path.exists(os.path.join(score_model_path,"model.pt")):
         print("load qwen_tower model")
-        return ScoreProcessorV3(score_model_path, text_model_path, base_model=base_model, method="qwen_tower")
+        return ScoreProcessorV3(score_model_path, text_model_path, base_model=base_model, method="qwen_tower", processor=processor)
+    else:
+        raise FileNotFoundError("model not found")
 
 class ProcessorGroup:
-    def __init__(self, processor_name="Qwen/Qwen2-Audio-7B-Instruct"):
+    def __init__(self, base_model_name=None, processor_name=None):
         self.ori_model = Qwen2AudioForConditionalGeneration.from_pretrained(
-                processor_name
-            )
+            default_base_model if base_model_name is None else base_model_name,
+        )
+        self.processor = Qwen2AudioProcessor.from_pretrained(
+            default_procesosor if processor_name is None else processor_name,
+            sample_rate=16000)
         self.ori_model.half()
+        self.feat_model = FeatExtractor("cuda")
         self.models = []
     def add(self, score_model_path, text_model_path):
-        self.models.append(create_processor(score_model_path, text_model_path, base_model=self.ori_model))
+        self.models.append(create_processor(score_model_path, text_model_path, base_model=self.ori_model, feat_model=self.feat_model, processor=self.processor))

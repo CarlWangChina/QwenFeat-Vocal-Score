@@ -10,3 +10,7 @@ data/score/*
 data/dataset/*
 ckpts/*
 outputs/*
+data/**/*.mp3
+data/**/*.MP3
+data/*
+*.log
