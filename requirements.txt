@@ -3,9 +3,11 @@ dashscope==1.23.8
 evaluate==0.4.3
 librosa==0.11.0
 modelscope==1.28.0
+numba==0.61.2
 peft==0.15.2
 pyloudnorm==0.1.1
 PyYAML==6.0.2
+resampy==0.4.3
 setuptools==78.1.1
 soundfile==0.13.1
 torch==2.7.1
