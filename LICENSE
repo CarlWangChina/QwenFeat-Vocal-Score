@@ -1,240 +1,72 @@
-<!DOCTYPE html>
-<html>
-<head data-suburl="">
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-	
-		<meta name="author" content="Gogs" />
-		<meta name="description" content="Gogs is a painless self-hosted Git service" />
-		<meta name="keywords" content="go, git, self-hosted, gogs">
-	
-	<meta name="referrer" content="no-referrer" />
-	<meta name="_csrf" content="w1Tcxp5KucyzWk6UqROSWBjyQis6MTc1NDg0MTgyMjI1MjI4Nzg3Ng" />
-	<meta name="_suburl" content="" />
+Apache License 
+Version 2.0, January 2004 
+http://www.apache.org/licenses/
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
-	
-	
-		<meta property="og:url" content="http://git.made2020.cn/" />
-		<meta property="og:type" content="website" />
-		<meta property="og:title" content="Gogs">
-		<meta property="og:description" content="Gogs is a painless self-hosted Git service.">
-		<meta property="og:image" content="http://git.made2020.cn/img/favicon.png" />
-		<meta property="og:site_name" content="Gogs">
-	
+1. Definitions.
 
-	<link rel="shortcut icon" href="/img/favicon.png" />
+"License" shall mean the terms and conditions for use, reproduction, and distribution as defined by Sections 1 through 9 of this document.
 
-	<script src="/js/jquery-3.4.1.min.js"></script>
-	<script src="/js/libs/jquery.are-you-sure.js"></script>
-	<link rel="stylesheet" href="/assets/font-awesome-4.6.3/css/font-awesome.min.css">
-	<link rel="stylesheet" href="/assets/octicons-4.3.0/octicons.min.css">
+"Licensor" shall mean the copyright owner or entity authorized by the copyright owner that is granting the License.
 
-	
-	
+"Legal Entity" shall mean the union of the acting entity and all other entities that control, are controlled by, or are under common control with that entity. For the purposes of this definition, "control" means (i) the power, direct or indirect, to cause the direction or management of such entity, whether by contract or otherwise, or (ii) ownership of fifty percent (50%) or more of the outstanding shares, or (iii) beneficial ownership of such entity.
 
-	
+"You" (or "Your") shall mean an individual or Legal Entity exercising permissions granted by this License.
 
-	
-	<link rel="stylesheet" href="/css/semantic-2.4.2.min.css">
-	<link rel="stylesheet" href="/css/gogs.min.css?v=39bdd5c2cdc85413e0d60bb0820f6042a997df0f">
-	<noscript>
-		<style>
-			.dropdown:hover > .menu { display: block; }
-			.ui.secondary.menu .dropdown.item > .menu { margin-top: 0; }
-		 </style>
-	</noscript>
+"Source" form shall mean the preferred form for making modifications, including but not limited to software source code, documentation source, and configuration files.
 
-	
-	<script src="/js/semantic-2.4.2.min.js"></script>
-	<script src="/js/gogs.js?v=39bdd5c2cdc85413e0d60bb0820f6042a997df0f"></script>
+"Object" form shall mean any form resulting from mechanical transformation or translation of a Source form, including but not limited to compiled object code, generated documentation, and conversions to other media types.
 
-	<title>Sign In - Gogs</title>
+"Work" shall mean the work of authorship, whether in Source or Object form, made available under the License, as indicated by a copyright notice that is included in or attached to the work (an example is provided in the Appendix below).
 
-	<meta name="theme-color" content="#ff5343">
+"Derivative Works" shall mean any work, whether in Source or Object form, that is based on (or derived from) the Work and for which the editorial revisions, annotations, elaborations, or other modifications represent, as a whole, an original work of authorship. For the purposes of this License, Derivative Works shall not include works that remain separable from, or merely link (or bind by name) to the interfaces of, the Work and Derivative Works thereof.
 
-	
-</head>
-<body>
-	<div class="full height">
-		<noscript>This website works better with JavaScript</noscript>
+"Contribution" shall mean any work of authorship, including the original version of the Work and any modifications or additions to that Work or Derivative Works thereof, that is intentionally submitted to Licensor for inclusion in the Work by the copyright owner or by an individual or Legal Entity authorized to submit on behalf of the copyright owner. For the purposes of this definition, "submitted" means any form of electronic, verbal, or written communication sent to the Licensor or its representatives, including but not limited to communication on electronic mailing lists, source code control systems, and issue tracking systems that are managed by, or on behalf of, the Licensor for the purpose of discussing and improving the Work, but excluding communication that is conspicuously marked or otherwise designated in writing by the copyright owner as "Not a Contribution."
 
-		
-			<div class="following bar light">
-				<div class="ui container">
-					<div class="ui grid">
-						<div class="column">
-							<div class="ui top secondary menu">
-								<a class="item brand" href="/">
-									<img class="ui mini image" src="/img/favicon.png">
-								</a>
+"Contributor" shall mean Licensor and any individual or Legal Entity on behalf of whom a Contribution has been received by Licensor and subsequently incorporated within the Work.
 
-								
-									<a class="item" href="/">Home</a>
-								
+2. Grant of Copyright License. Subject to the terms and conditions of this License, each Contributor hereby grants to You a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable copyright license to reproduce, prepare Derivative Works of, publicly display, publicly perform, sublicense, and distribute the Work and such Derivative Works in Source or Object form.
 
-								<a class="item" href="/explore/repos">Explore</a>
-								
+3. Grant of Patent License. Subject to the terms and conditions of this License, each Contributor hereby grants to You a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable (except as stated in this section) patent license to make, have made, use, offer to sell, sell, import, and otherwise transfer the Work, where such license applies only to those patent claims licensable by such Contributor that are necessarily infringed by their Contribution(s) alone or by combination of their Contribution(s) with the Work to which such Contribution(s) was submitted. If You institute patent litigation against any entity (including a cross-claim or counterclaim in a lawsuit) alleging that the Work or a Contribution incorporated within the Work constitutes direct or contributory patent infringement, then any patent licenses granted to You under this License for that Work shall terminate as of the date such litigation is filed.
 
-								
+4. Redistribution. You may reproduce and distribute copies of the Work or Derivative Works thereof in any medium, with or without modifications, and in Source or Object form, provided that You meet the following conditions:
 
-									<a class="item" target="_blank" rel="noopener noreferrer" href="https://gogs.io/docs" rel="noreferrer">Help</a>
-									<div class="right menu">
-										
-										<a class="item" href="/user/login?redirect_to=%2fuser%2flogin">
-											<i class="octicon octicon-sign-in"></i> Sign In
-										</a>
-									</div>
+(a) You must give any other recipients of the Work or Derivative Works a copy of this License; and
 
-								
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		
+(b) You must cause any modified files to carry prominent notices stating that You changed the files; and
 
-		
+(c) You must retain, in the Source form of any Derivative Works that You distribute, all copyright, patent, trademark, and attribution notices from the Source form of the Work, excluding those notices that do not pertain to any part of the Derivative Works; and
 
+(d) If the Work includes a "NOTICE" text file as part of its distribution, then any Derivative Works that You distribute must include a readable copy of the attribution notices contained within such NOTICE file, excluding those notices that do not pertain to any part of the Derivative Works, in at least one of the following places: within a NOTICE text file distributed as part of the Derivative Works; within the Source form or documentation, if provided along with the Derivative Works; or, within a display generated by the Derivative Works, if and wherever such third-party notices normally appear. The contents of the NOTICE file are for informational purposes only and do not modify the License. You may add Your own attribution notices within Derivative Works that You distribute, alongside or as an addendum to the NOTICE text from the Work, provided that such additional attribution notices cannot be construed as modifying the License.
 
-<div class="user signin">
-	<div class="ui middle very relaxed page grid">
-		<div class="column">
-			<form class="ui form" action="/user/login" method="post">
-				<input type="hidden" name="_csrf" value="w1Tcxp5KucyzWk6UqROSWBjyQis6MTc1NDg0MTgyMjI1MjI4Nzg3Ng">
-				<h3 class="ui top attached header">
-					Sign In
-				</h3>
-				<div class="ui attached segment">
-					
+You may add Your own copyright statement to Your modifications and may provide additional or different license terms and conditions for use, reproduction, or distribution of Your modifications, or for any such Derivative Works as a whole, provided Your use, reproduction, and distribution of the Work otherwise complies with the conditions stated in this License.
 
+5. Submission of Contributions. Unless You explicitly state otherwise, any Contribution intentionally submitted for inclusion in the Work by You to the Licensor shall be under the terms and conditions of this License, without any additional terms or conditions. Notwithstanding the above, nothing herein shall supersede or modify the terms of any separate license agreement you may have executed with Licensor regarding such Contributions.
 
+6. Trademarks. This License does not grant permission to use the trade names, trademarks, service marks, or product names of the Licensor, except as required for reasonable and customary use in describing the origin of the Work and reproducing the content of the NOTICE file.
 
+7. Disclaimer of Warranty. Unless required by applicable law or agreed to in writing, Licensor provides the Work (and each Contributor provides its Contributions) on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied, including, without limitation, any warranties or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE. You are solely responsible for determining the appropriateness of using or redistributing the Work and assume any risks associated with Your exercise of permissions under this License.
 
-					<div class="required inline field ">
-						<label for="user_name">Username or email</label>
-						<input id="user_name" name="user_name" value="" autofocus required>
-					</div>
-					<div class="required inline field ">
-						<label for="password">Password</label>
-						<input id="password" name="password" type="password" autocomplete="off" value="" required>
-					</div>
-					
-					<div class="inline field">
-						<label></label>
-						<div class="ui checkbox">
-							<label>Remember Me</label>
-							<input name="remember" type="checkbox">
-						</div>
-					</div>
+8. Limitation of Liability. In no event and under no legal theory, whether in tort (including negligence), contract, or otherwise, unless required by applicable law (such as deliberate and grossly negligent acts) or agreed to in writing, shall any Contributor be liable to You for damages, including any direct, indirect, special, incidental, or consequential damages of any character arising as a result of this License or out of the use or inability to use the Work (including but not limited to damages for loss of goodwill, work stoppage, computer failure or malfunction, or any and all other commercial damages or losses), even if such Contributor has been advised of the possibility of such damages.
 
-					<div class="inline field">
-						<label></label>
-						<button class="ui green button">Sign In</button>
-						<a href="/user/forget_password">Forgot password?</a>
-					</div>
-					
-				</div>
-			</form>
-		</div>
-	</div>
-</div>
+9. Accepting Warranty or Additional Liability. While redistributing the Work or Derivative Works thereof, You may choose to offer, and charge a fee for, acceptance of support, warranty, indemnity, or other liability obligations and/or rights consistent with this License. However, in accepting such obligations, You may act only on Your own behalf and on Your sole responsibility, not on behalf of any other Contributor, and only if You agree to indemnify, defend, and hold each Contributor harmless for any liability incurred by, or claims asserted against, such Contributor by reason of your accepting any such warranty or additional liability.
 
-	</div>
-	<footer>
-		<div class="ui container">
-			<div class="ui left">
-				© 2025 Gogs
-			</div>
-			<div class="ui right links">
-				
-					<span>
-						Page: <strong>1ms</strong> Template: <strong>0ms</strong>
-					</span>
-				
-				
-				<div class="ui language bottom floating slide up dropdown link item">
-					<i class="world icon"></i>
-					<div class="text">English</div>
-					<div class="menu">
-						
-							<a class="item active selected" href="#">English</a>
-						
-							<a class="item " href="/user/login?lang=zh-CN">简体中文</a>
-						
-							<a class="item " href="/user/login?lang=zh-HK">繁體中文（香港）</a>
-						
-							<a class="item " href="/user/login?lang=zh-TW">繁體中文（臺灣）</a>
-						
-							<a class="item " href="/user/login?lang=de-DE">Deutsch</a>
-						
-							<a class="item " href="/user/login?lang=fr-FR">français</a>
-						
-							<a class="item " href="/user/login?lang=nl-NL">Nederlands</a>
-						
-							<a class="item " href="/user/login?lang=lv-LV">latviešu</a>
-						
-							<a class="item " href="/user/login?lang=ru-RU">русский</a>
-						
-							<a class="item " href="/user/login?lang=ja-JP">日本語</a>
-						
-							<a class="item " href="/user/login?lang=es-ES">español</a>
-						
-							<a class="item " href="/user/login?lang=pt-BR">português do Brasil</a>
-						
-							<a class="item " href="/user/login?lang=pl-PL">polski</a>
-						
-							<a class="item " href="/user/login?lang=bg-BG">български</a>
-						
-							<a class="item " href="/user/login?lang=it-IT">italiano</a>
-						
-							<a class="item " href="/user/login?lang=fi-FI">suomi</a>
-						
-							<a class="item " href="/user/login?lang=tr-TR">Türkçe</a>
-						
-							<a class="item " href="/user/login?lang=cs-CZ">čeština</a>
-						
-							<a class="item " href="/user/login?lang=sr-SP">српски</a>
-						
-							<a class="item " href="/user/login?lang=sv-SE">svenska</a>
-						
-							<a class="item " href="/user/login?lang=ko-KR">한국어</a>
-						
-							<a class="item " href="/user/login?lang=gl-ES">galego</a>
-						
-							<a class="item " href="/user/login?lang=uk-UA">українська</a>
-						
-							<a class="item " href="/user/login?lang=en-GB">English (United Kingdom)</a>
-						
-							<a class="item " href="/user/login?lang=hu-HU">Magyar</a>
-						
-							<a class="item " href="/user/login?lang=sk-SK">Slovenčina</a>
-						
-							<a class="item " href="/user/login?lang=id-ID">Indonesian</a>
-						
-							<a class="item " href="/user/login?lang=fa-IR">Persian</a>
-						
-							<a class="item " href="/user/login?lang=vi-VN">Vietnamese</a>
-						
-							<a class="item " href="/user/login?lang=pt-PT">Português</a>
-						
-					</div>
-				</div>
-				<a href="/assets/librejs/librejs.html" style="display:none" data-jslicense="1">Javascript Licenses</a>
-				<a target="_blank" rel="noopener noreferrer" href="https://gogs.io">Website</a>
-			</div>
-		</div>
-	</footer>
-</body>
+END OF TERMS AND CONDITIONS
 
+APPENDIX: How to apply the Apache License to your work.
 
+To apply the Apache License to your work, attach the following boilerplate notice, with the fields enclosed by brackets "[]" replaced with your own identifying information. (Don't include the brackets!) The text should be enclosed in the appropriate comment syntax for the file format. We also recommend that a file or class name and description of purpose be included on the same "printed page" as the copyright notice for easier identification within third-party archives.
 
+Copyright [yyyy] [name of copyright owner]
 
+Licensed under the Apache License, Version 2.0 (the "License"); 
+you may not use this file except in compliance with the License. 
+You may obtain a copy of the License at
 
+http://www.apache.org/licenses/LICENSE-2.0
 
-
-<script src="/js/libs/emojify-1.1.0.min.js"></script>
-<script src="/js/libs/clipboard-2.0.4.min.js"></script>
-
-
-</html>
-
+Unless required by applicable law or agreed to in writing, software 
+distributed under the License is distributed on an "AS IS" BASIS, 
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+See the License for the specific language governing permissions and 
+limitations under the License.
