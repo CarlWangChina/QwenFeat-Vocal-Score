@@ -52,8 +52,8 @@ def load_model(model_path):
 if __name__ == "__main__":
     processor = qwenaudio.model.FeatExtractor("cuda")
     models = []
-    models.append(load_model("ckpts/train_ds_4_feat_score_al/denoise/0/score/best_model_epoch/2"))
-    models.append(load_model("ckpts/train_ds_4_feat_score_al/denoise/1/score/best_model_epoch/9"))
+    models.append(load_model("ckpts/train_ds_4_feat_score_al/denoise/2/score/best_model_epoch/25"))
+    models.append(load_model("ckpts/train_ds_4_feat_score_al/denoise/3/score/best_model_epoch/5"))
     models.append(load_model("ckpts/train_ds_4_feat_score_al/denoise/2/score/best_model_epoch/25"))
     models.append(load_model("ckpts/train_ds_4_feat_score_al/denoise/3/score/best_model_epoch/5"))
     

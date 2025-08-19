@@ -27,7 +27,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # 初始化模型和处理器
-    model = qwenaudio.model.AudioFeatClassifier()
+    model = qwenaudio.model.AudioFeatClassifier_res()
     if dist.get_rank() == 0:
         print(model)
 

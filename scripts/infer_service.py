@@ -11,6 +11,7 @@ from concurrent.futures import ProcessPoolExecutor
 import functools
 import itertools
 import logging
+import pyloudnorm as pyln
 
 ROOT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.join(ROOT_PATH, "src"))
@@ -48,16 +49,16 @@ class ProcessorWorker:
         text_model = "ckpts/generator-lora-32-16-textonly-simple-v2-int4/best_model_epoch_16/lora_weights"
 
         logger.info(f"Loading model 1 on GPU {self.gpu_id}...")
-        self.processor.add("ckpts/train_ds_4_score_al/denoise/0/score/best_model_epoch/8", text_model)# 1. 专业技巧 qwen encoder+分类器
+        self.processor.add("ckpts/train_ds_4_feat_score_al/denoise/0/score/model_epoch24", text_model)# 1. 专业技巧 qwen encoder+分类器
         logger.info(f"Loading model 2 on GPU {self.gpu_id}...")
-        self.processor.add("ckpts/train_ds_4_al/denoise/1/score/best_model_epoch_39/lora_weights", "ckpts/train_ds_4_al/denoise/1/text/best_model_epoch_39/lora_weights")# 2. 情感表达 qwen2audio LLM 输出层; 4维度 top2
+        self.processor.add("ckpts/train_ds_4_feat_score_al/denoise/1/score/best_model_epoch/13", text_model)# 2. 情感表达 qwen2audio LLM 输出层; 4维度 top2
         logger.info(f"Loading model 3 on GPU {self.gpu_id}...")
         self.processor.add("ckpts/train_ds_4_feat_score_al/denoise/2/score/best_model_epoch/25", text_model)# 3. 音色与音质 samoye encoder+f0 to RNN1; 
         logger.info(f"Loading model 4 on GPU {self.gpu_id}...")
         self.processor.add("ckpts/train_ds_4_feat_score_al/denoise/3/score/best_model_epoch/5", text_model)# 4. 气息控制 samoye encoder+f0 to RNN2;
         logger.info(f"Processor on GPU {self.gpu_id} initialized.")
         self.processor.models[0].top2_mode = False
-        self.processor.models[1].top2_mode = True
+        self.processor.models[1].top2_mode = False
         self.processor.models[2].top2_mode = False
         self.processor.models[3].top2_mode = False
     def process_audio(
@@ -68,7 +69,9 @@ class ProcessorWorker:
             singer_id="0", 
             speed_ratio=1.0, 
             return_single_score=True,
-            return_sum_score=True):
+            return_sum_score=True,
+            return_single_text=False,
+            return_prompt=False,):
         """处理音频数据"""
         logging.info(f"Processing audio on GPU {self.gpu_id} process_steps={process_steps} get_final_text={get_final_text} render_final_text={render_final_text} singer_id={singer_id}")
         try:
@@ -81,18 +84,26 @@ class ProcessorWorker:
                     sr=self.processor.processor.feature_extractor.sampling_rate,
                     mono=True
                 )
+                dtype = data.dtype
+                meter = pyln.Meter(sr) # create BS.1770 meter
+                loudness = meter.integrated_loudness(data)
+                data = pyln.normalize.loudness(data, loudness, -12.0).astype(dtype)
 
                 max_samples = self.processor.processor.feature_extractor.sampling_rate * 30
-                data = data[:max_samples]
+                # data = data[:max_samples]
 
                 result = {}
                 result_to_gen = {}
                 sum_score = 0
                 for i in process_steps:
-                    print(self.processor.models[i], i , self.processor.models)
-                    val = self.processor.models[i].generate(data, i, simple_model=True)
+                    # print(self.processor.models[i], i , self.processor.models)
+                    val = self.processor.models[i].generate(data, i, simple_model=True, return_single_text=return_single_text or get_final_text)
                     result_to_gen[qwenaudio.prompts.prompt_mapper_reverse[i]] = (val["text"], val["score"])
                     if return_single_score:
+                        if not return_single_text and "text" in val:
+                            del val["text"]
+                        if not return_prompt and "prompt" in val:
+                            del val["prompt"]
                         result[qwenaudio.prompts.prompt_mapper_reverse[i]] = val
                     if return_sum_score:
                         sum_score += val["score"]
@@ -150,7 +161,17 @@ def init_worker_process(gpu_id):
     global _worker
     _worker = ProcessorWorker(gpu_id)
 
-def process_audio_in_worker(audio_bytes, get_final_text=False, render_final_text=False, process_steps=[0,1,2,3], singer_id="0", speed_ratio=1.0, return_single_score=True, return_sum_score=True):
+def process_audio_in_worker(
+        audio_bytes, 
+        get_final_text=False, 
+        render_final_text=False, 
+        process_steps=[0,1,2,3], 
+        singer_id="0", 
+        speed_ratio=1.0, 
+        return_single_score=True, 
+        return_sum_score=True,
+        return_single_text=False,
+        return_prompt=False):
     """在工作进程中处理音频"""
     global _worker
     return _worker.process_audio(
@@ -161,9 +182,21 @@ def process_audio_in_worker(audio_bytes, get_final_text=False, render_final_text
         singer_id=singer_id, 
         speed_ratio=speed_ratio, 
         return_single_score=return_single_score, 
-        return_sum_score=return_sum_score)
+        return_sum_score=return_sum_score,
+        return_single_text=return_single_text,
+        return_prompt=return_prompt)
 
-async def process_audio_bytes(audio_bytes, get_final_text, render_final_text, process_steps, singer_id, speed_ratio, return_single_score, return_sum_score):
+async def process_audio_bytes(
+        audio_bytes, 
+        get_final_text, 
+        render_final_text, 
+        process_steps, 
+        singer_id, 
+        speed_ratio, 
+        return_single_score, 
+        return_sum_score,
+        return_single_text,
+        return_prompt):
     """处理音频字节的核心逻辑"""
     global worker_round_robin
     
@@ -180,7 +213,17 @@ async def process_audio_bytes(audio_bytes, get_final_text, render_final_text, pr
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(
         executor,
-        functools.partial(process_audio_in_worker, audio_bytes, get_final_text, render_final_text, list(process_steps_id), singer_id, speed_ratio, return_single_score, return_sum_score)
+        functools.partial(
+            process_audio_in_worker, 
+            audio_bytes, 
+            get_final_text, 
+            render_final_text, 
+            list(process_steps_id), 
+            singer_id, speed_ratio, 
+            return_single_score, 
+            return_sum_score,
+            return_single_text,
+            return_prompt)
     )
 
 async def audio_handler(request):
@@ -193,13 +236,15 @@ async def audio_handler(request):
         audio_bytes = await field.read()
 
         # 从查询参数获取标志
-        get_final_text = request.query.get("get_final_text", "false").lower() in ["true", "1", "yes"]
+        get_final_text = request.query.get("get_final_text", "true").lower() in ["true", "1", "yes"]
         render_final_text = request.query.get("render_final_text", "false").lower() in ["true", "1", "yes"]
         process_steps = request.query.get("process_steps", "0123").lower()
         singer_id = request.query.get("singer_id", "0")
         speed_ratio = float(request.query.get("speed_ratio", "1.3"))
         return_single_score = request.query.get("return_single_score", "true").lower() in ["true", "1", "yes"]
         return_sum_score = request.query.get("return_sum_score", "true").lower() in ["true", "1", "yes"]
+        return_single_text = request.query.get("return_single_text", "false").lower() in ["true", "1", "yes"]
+        return_prompt = request.query.get("return_prompt", "false").lower() in ["true", "1", "yes"]
         
         result = await process_audio_bytes(
             audio_bytes, 
@@ -209,7 +254,9 @@ async def audio_handler(request):
             singer_id, 
             speed_ratio, 
             return_single_score, 
-            return_sum_score)
+            return_sum_score,
+            return_single_text,
+            return_prompt)
         return web.json_response(result)
 
     except Exception as e:
@@ -235,14 +282,15 @@ async def local_audio_handler(request):
             audio_bytes = f.read()
         
         # 从查询参数获取标志
-        get_final_text = request.query.get("get_final_text", "false").lower() in ["true", "1", "yes"]
+        get_final_text = request.query.get("get_final_text", "true").lower() in ["true", "1", "yes"]
         render_final_text = request.query.get("render_final_text", "false").lower() in ["true", "1", "yes"]
         process_steps = request.query.get("process_steps", "0123").lower()
         singer_id = request.query.get("singer_id", "0")
         speed_ratio = float(request.query.get("speed_ratio", "1.3"))
         return_single_score = request.query.get("return_single_score", "true").lower() in ["true", "1", "yes"]
         return_sum_score = request.query.get("return_sum_score", "true").lower() in ["true", "1", "yes"]
-
+        return_single_text = request.query.get("return_single_text", "false").lower() in ["true", "1", "yes"]
+        return_prompt = request.query.get("return_prompt", "false").lower() in ["true", "1", "yes"]
         
         result = await process_audio_bytes(
             audio_bytes, 
@@ -252,7 +300,9 @@ async def local_audio_handler(request):
             singer_id, 
             speed_ratio, 
             return_single_score, 
-            return_sum_score)
+            return_sum_score,
+            return_single_text,
+            return_prompt)
         return web.json_response(result)
 
     except FileNotFoundError:

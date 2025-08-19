@@ -89,7 +89,7 @@ class ScoreProcessor:
 
         conversation_text = self.processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
         inputs = self.processor(text=conversation_text, audio=audio, return_tensors="pt", padding=True).to("cuda")
-        generate_ids = self.text_gen.generate(**inputs, max_length=qwenaudio.config.max_length)
+        generate_ids = self.text_gen.generate(**inputs, max_length=qwenaudio.config.max_length, repetition_penalty=1.1, no_repeat_ngram_size=2)
         generate_ids = generate_ids[:, inputs.input_ids.size(1):]
         text_by_genmodel = self.processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
         res_genmodel = decode_generated(text_by_genmodel)
@@ -141,7 +141,7 @@ class ScoreProcessor:
         conversation_text = self.processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
         conversation_text += str(score)+"分，"
         inputs = self.processor(text=conversation_text, audio=audio, return_tensors="pt", padding=True).to("cuda")
-        generate_ids = self.text_gen.generate(**inputs, max_length=qwenaudio.config.max_length)
+        generate_ids = self.text_gen.generate(**inputs, max_length=qwenaudio.config.max_length, repetition_penalty=1.1, no_repeat_ngram_size=2)
         generate_ids = generate_ids[:, inputs.input_ids.size(1):]
         text_by_genmodel = self.processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
         res_genmodel = decode_generated(text_by_genmodel)
@@ -162,7 +162,7 @@ class ScoreProcessor:
                 ]}
             ], add_generation_prompt=True, tokenize=False)
         inputs = self.processor(text=conversation_refix_text, audio=audio, return_tensors="pt", padding=True).to("cuda")
-        generate_ids = self.text_gen.generate(**inputs, max_length=qwenaudio.config.max_length)
+        generate_ids = self.text_gen.generate(**inputs, max_length=qwenaudio.config.max_length, repetition_penalty=1.1, no_repeat_ngram_size=2)
         generate_ids = generate_ids[:, inputs.input_ids.size(1):]
         text_by_genmodel_refix = self.processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
         res_refix = decode_generated(text_by_genmodel_refix.strip("分")+"分，"+text_by_genmodel_with_score)
@@ -255,7 +255,7 @@ class ScoreProcessorV2:
         ]
         conversation_text = self.processor.apply_chat_template(conversation, add_generation_prompt=True, tokenize=False)
         inputs = self.processor(text=conversation_text, audio=audio, return_tensors="pt", padding=True).to("cuda")
-        generate_ids = self.text_gen.generate(**inputs, max_length=qwenaudio.config.max_length, eos_token_id=self.processor.tokenizer.encode("\n")[0])
+        generate_ids = self.text_gen.generate(**inputs, max_length=qwenaudio.config.max_length, eos_token_id=self.processor.tokenizer.encode("\n")[0], repetition_penalty=1.1, no_repeat_ngram_size=2)
         generate_ids = generate_ids[:, inputs.input_ids.size(1):]
         text_by_genmodel = self.processor.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
         return {
@@ -323,17 +323,17 @@ class ScoreProcessorV2:
             # char_probs_max_key = max(char_probs, key=char_probs.get)
             # print("预测的分数是：", char_probs_max_key)
             score = int(char_probs_max_key)
-            print(char_probs)
+            # print(char_probs)
 
         return {
             "prompt": conversation_text,
             "text": str(score)+"分，"+text,
             "score":score,
-            "probs":char_probs
+            # "probs":char_probs
         }
     
     @torch.inference_mode()
-    def generate(self, audio, gen_method, simple_model=False):
+    def generate(self, audio, gen_method, simple_model=False, return_single_text=True):
         if isinstance(gen_method, str):
             gen_method = qwenaudio.prompts.prompt_mapper[gen_method]
         gen_text = self.generate_text(audio, gen_method, simple_model)
@@ -373,7 +373,12 @@ class ScoreProcessorV3:
             self.model.to("cuda")
             self.model.eval()
         elif method == "audio_feat":
-            self.model = qwenaudio.model.AudioFeatClassifier()
+            if os.path.exists(os.path.join(score_model_path,"model_weight.pt")):
+                self.model = qwenaudio.model.AudioFeatClassifier()
+            elif os.path.exists(os.path.join(score_model_path,"model_weight_res.pt")):
+                self.model = qwenaudio.model.AudioFeatClassifier_res()
+            else:
+                raise ValueError("model_weight.pt or model_weight_res.pt not found")
             self.model.load_ckpt(score_model_path)
             self.model.to("cuda")
             self.model.eval()
@@ -463,11 +468,20 @@ class ScoreProcessorV3:
         return {"score":out_id+1, "prompt": conversation_text}
     
     @torch.inference_mode()
-    def generate(self, audio, gen_method, simple_model=False):
+    def generate(self, audio, gen_method, simple_model=False, return_single_text=True):
         if isinstance(gen_method, str):
             gen_method = qwenaudio.prompts.prompt_mapper[gen_method]
 
-        gen_text = self.generate_text(audio, gen_method, simple_model)
+        if return_single_text:
+            gen_text = self.generate_text(audio, gen_method, simple_model)
+            # print("gen1")
+        else:
+            if self.method == "qwen":
+                gen_text = self.generate_text(audio, gen_method, simple_model)
+                # print("gen2")
+            elif self.method == "qwen_tower" or self.method == "audio_feat":
+                gen_text = {"text":""}
+                # print("gen skip")
         score = self.generate_score(audio, gen_method, gen_text['text'])
         score["text"] = str(score["score"])+"分，"+gen_text['text']
         return score
@@ -484,7 +498,7 @@ def create_processor(score_model_path, text_model_path, base_model=None, feat_mo
     elif os.path.exists(os.path.join(score_model_path,"adapter_config.json")):
         print("load qwen text gen model")
         return ScoreProcessorV2(score_model_path, text_model_path, base_model=base_model, processor=processor)
-    elif os.path.exists(os.path.join(score_model_path,"model_weight.pt")):
+    elif os.path.exists(os.path.join(score_model_path,"model_weight.pt")) or os.path.exists(os.path.join(score_model_path,"model_weight_res.pt")):
         print("load audio feat model")
         return ScoreProcessorV3(score_model_path, text_model_path, base_model=base_model, method="audio_feat", feat_model=feat_model, processor=processor)
     elif os.path.exists(os.path.join(score_model_path,"model.pt")):

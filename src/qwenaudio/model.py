@@ -225,6 +225,133 @@ class FeatExtractor():
     def process_audio(self, audio):
         return self.whisper.inference(audio), self.hubert.inference(audio), pitch.compute_f0_sing_audio(audio, 16000)
 
+class ResidualBlock(torch.nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size, stride):
+        super().__init__()
+        self.conv1 = torch.nn.Conv1d(
+            in_channels, 
+            out_channels, 
+            kernel_size, 
+            stride, 
+            padding=kernel_size//2,
+            bias=False
+        )
+        self.bn1 = torch.nn.BatchNorm1d(out_channels)
+        self.relu = torch.nn.ReLU(inplace=True)
+        
+        self.conv2 = torch.nn.Conv1d(
+            out_channels,
+            out_channels,
+            kernel_size,
+            stride=1,
+            padding=kernel_size//2,
+            bias=False
+        )
+        self.bn2 = torch.nn.BatchNorm1d(out_channels)
+        
+        # 捷径连接处理维度变化
+        self.shortcut = torch.nn.Sequential()
+        if in_channels != out_channels or stride != 1:
+            self.shortcut = torch.nn.Conv1d(
+                in_channels,
+                out_channels,
+                kernel_size=1,
+                stride=stride,
+                bias=False
+            )
+            self.bn_shortcut = torch.nn.BatchNorm1d(out_channels)
+
+    def forward(self, x):
+        residual = x
+        
+        out = self.conv1(x)
+        out = self.bn1(out)
+        out = self.relu(out)
+        
+        out = self.conv2(out)
+        out = self.bn2(out)
+        
+        # 处理捷径连接
+        if self.shortcut is not None:
+            residual = self.shortcut(residual)
+            residual = self.bn_shortcut(residual)
+            
+        out += residual
+        out = self.relu(out)
+        return out
+
+class AudioFeatClassifier_res(torch.nn.Module):
+    def __init__(self, 
+                 ppg_dim=1280, 
+                 vec_dim=256, 
+                 pit_embed_dim=32, 
+                 hidden_size=512, 
+                 num_layers=8, 
+                 num_classes=5):
+        super().__init__()
+        
+        # 1. Pitch嵌入层
+        self.pit_embed = torch.nn.Embedding(256, pit_embed_dim)
+        
+        # 2. 卷积模块（包含3个残差块）
+        self.conv_layers = torch.nn.Sequential(
+            ResidualBlock(
+                in_channels=ppg_dim + vec_dim + pit_embed_dim,
+                out_channels=512,
+                kernel_size=5,
+                stride=4
+            ),
+            ResidualBlock(512, 512, 5, 2),
+            ResidualBlock(512, 512, 5, 2)
+        )
+        
+        # 3. LSTM层（输入维度改为512）
+        self.lstm = torch.nn.LSTM(
+            input_size=512,
+            hidden_size=hidden_size,
+            num_layers=num_layers,
+            batch_first=True,
+            bidirectional=True
+        )
+        
+        # 4. 分类器
+        self.classifier = torch.nn.Sequential(
+            torch.nn.Linear(hidden_size*2, 256),
+            torch.nn.ReLU(),
+            torch.nn.Dropout(0.3),
+            torch.nn.Linear(256, num_classes)
+        )
+
+    def forward(self, ppg, vec, pit):
+        # 维度处理
+        pit_emb = self.pit_embed(pit)  # [B, T, 32]
+        x = torch.cat([ppg, vec, pit_emb], dim=-1)  # [B, T, 1568]
+        
+        # 维度转换：[B, T, C] -> [B, C, T]
+        x = x.permute(0, 2, 1)
+        
+        # 通过卷积模块（长度压缩约10倍）
+        x = self.conv_layers(x)  # [B, 512, T'] (T' ≈ T/10)
+        
+        # 恢复维度：[B, C, T'] -> [B, T', C]
+        x = x.permute(0, 2, 1)
+        
+        # LSTM处理
+        lstm_out, _ = self.lstm(x)  # [B, T', 1024]
+        
+        # 取最终状态
+        last_output = lstm_out[:, -1, :]  # [B, 1024]
+        
+        # 分类
+        return self.classifier(last_output)
+
+    def save_model(self, save_path):
+        os.makedirs(save_path, exist_ok=True)
+        torch.save(self.state_dict(), save_path+"/model_weight_res.pt")
+    
+    def load_ckpt(self, load_path):
+        self.load_state_dict(torch.load(load_path+"/model_weight_res.pt"))
+        
 class AudioFeatClassifier(torch.nn.Module):
     def __init__(self, 
                  ppg_dim=1280, 
