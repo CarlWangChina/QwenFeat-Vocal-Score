@@ -1,7 +1,7 @@
 # 人声录音打分模型  
-使用方法：  
+## 使用方法：  
 
-安装环境  
+### 安装环境  
 
 ```bash
 conda create -n audioscore python=3.10
@@ -9,7 +9,13 @@ conda activate audioscore
 pip install -r requirements.txt
 ```
 
-调用(可执行的代码见`python tests/test_generate_score.py`)  
+### 下载模型  
+下载下面的目录，放在当前位置  
+https://huggingface.co/karl-wang/QwenFeat-Vocal-Score/tree/main/audioscore/ckpts  
+直接git clone [https://huggingface.co/karl-wang/QwenFeat-Vocal-Score](https://huggingface.co/karl-wang/QwenFeat-Vocal-Score) 也可以
+
+### 调用  
+(可执行的代码见`python tests/test_generate_score.py`)  
 
 ```python
 import os,sys

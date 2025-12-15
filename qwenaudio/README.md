@@ -1,6 +1,11 @@
 # qwenaudio打分工具  
 ## 调用方法
 
+### 下载模型  
+下载下面的目录，放在当前位置  
+https://huggingface.co/karl-wang/QwenFeat-Vocal-Score/tree/main/qwenaudio/ckpts  
+直接git clone [https://huggingface.co/karl-wang/QwenFeat-Vocal-Score](https://huggingface.co/karl-wang/QwenFeat-Vocal-Score) 也可以
+
 ### 启用服务  
 
 `python scripts/infer_service.py`  
