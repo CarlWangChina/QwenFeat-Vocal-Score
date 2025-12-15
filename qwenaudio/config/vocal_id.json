@@ -1,0 +1,207 @@
+{
+    "vocal_id": [
+        {
+            "id": "0",
+            "name": "周杰伦.MP3",
+            "path": "data/zjl.MP3",
+            "model_id": "S_F2csx4lz1",
+            "user":2
+        },
+        {
+            "id": "1",
+            "name": "张信哲.MP3",
+            "path": "data/所有人明星说话/张信哲.MP3",
+            "model_id": "S_tSvP99Tw1",
+            "user":2
+        },
+        {
+            "id": "2",
+            "name": "蔡依林.MP3",
+            "path": "data/所有人明星说话/蔡依林.MP3",
+            "model_id": "S_xwhS3ffz1",
+            "user":2
+        },
+        {
+            "id": "3",
+            "name": "赵雷.MP3",
+            "path": "data/所有人明星说话/赵雷.MP3",
+            "model_id": "S_ywhS3ffz1",
+            "user":2
+        },
+        {
+            "id": "4",
+            "name": "张韶涵.MP3",
+            "path": "data/所有人明星说话/张韶涵.MP3",
+            "model_id": "S_J6Dtxxkz1",
+            "user":2
+        },
+        {
+            "id": "5",
+            "name": "张惠妹.MP3",
+            "path": "data/所有人明星说话/张惠妹.MP3",
+            "model_id": "S_pMxtxxkz1",
+            "user":2
+        },
+        {
+            "id": "6",
+            "name": "邓紫棋.MP3",
+            "path": "data/所有人明星说话/邓紫棋.MP3",
+            "model_id": "S_oIwtxxkz1",
+            "user":2
+        },
+        {
+            "id": "7",
+            "name": "单以纯.MP3",
+            "path": "data/所有人明星说话/单以纯.MP3",
+            "model_id": "S_nIwtxxkz1",
+            "user":2
+        },
+        {
+            "id": "8",
+            "name": "梁静茹.MP3",
+            "path": "data/所有人明星说话/梁静茹.MP3",
+            "model_id": "S_mIwtxxkz1",
+            "user":2
+        },
+        {
+            "id": "9",
+            "name": "林俊杰.MP3",
+            "path": "data/所有人明星说话/林俊杰.MP3",
+            "model_id": "S_lIwtxxkz1",
+            "user":2
+        },
+        {
+            "id": "10",
+            "name": "莫文蔚.MP3",
+            "path": "data/所有人明星说话/莫文蔚.MP3",
+            "model_id": "S_jEvtxxkz1",
+            "user":2
+        },
+        {
+            "id": "11",
+            "name": "王力宏.MP3",
+            "path": "data/音色替换/王力宏).WAV",
+            "model_id": "S_iEvtxxkz1",
+            "user":2
+        },
+        {
+            "id": "12",
+            "name": "伍佰.MP3",
+            "path": "data/所有人明星说话/伍佰.MP3",
+            "model_id": "S_hEvtxxkz1",
+            "user":2
+        },
+        {
+            "id": "13",
+            "name": "李荣浩.MP3",
+            "path": "data/所有人明星说话/李荣浩.MP3",
+            "model_id": "S_Pbotxxkz1",
+            "user":2
+        },
+        {
+            "id": "14",
+            "name": "薛之谦.mp3",
+            "path": "data/所有人明星说话/薛之谦.mp3",
+            "model_id": "S_7rjr21lz1",
+            "user":2
+        },
+        {
+            "id": "15",
+            "name": "刘若英.mp3",
+            "path": "data/所有人明星说话/刘若英.mp3",
+            "model_id": "S_FYbr21lz1",
+            "user":2
+        },
+        {
+            "id": "16",
+            "name": "毛不易.MP3",
+            "path": "data/所有人明星说话/毛不易.MP3",
+            "model_id": "S_BUar21lz1",
+            "user":2
+        },
+        {
+            "id": "17",
+            "name": "王心凌.mp3",
+            "path": "data/音色替换/王心凌.WAV",
+            "model_id": "S_CQ9r21lz1",
+            "user":2
+        },
+        {
+            "id": "18",
+            "name": "方大同.MP3",
+            "path": "data/所有人明星说话/方大同.MP3",
+            "model_id": "S_AQ9r21lz1",
+            "user":2
+        },
+        {
+            "id": "19",
+            "name": "张学友.MP3",
+            "path": "data/所有人明星说话/张学友.MP3",
+            "model_id": "S_zQ9r21lz1",
+            "user":2
+        },
+        {
+            "id": "20",
+            "name": "汪苏泷.MP3",
+            "path": "data/所有人明星说话/汪苏泷.MP3",
+            "model_id": "S_yQ9r21lz1",
+            "user":2
+        },
+        {
+            "id": "21",
+            "name": "王菲.MP3",
+            "path": "data/所有人明星说话/王菲.MP3",
+            "model_id": "S_xQ9r21lz1",
+            "user":2
+        },
+        {
+            "id": "22",
+            "name": "张杰.MP3",
+            "path": "data/所有人明星说话/张杰.MP3",
+            "model_id": "S_tM8r21lz1",
+            "user":2
+        },
+        {
+            "id": "23",
+            "name": "许嵩.MP3",
+            "path": "data/所有人明星说话/许嵩.MP3",
+            "model_id": "S_5o2r21lz1",
+            "user":2
+        },
+        {
+            "id": "24",
+            "name": "周深.MP3",
+            "path": "data/所有人明星说话/周深.MP3",
+            "model_id": "S_I2csx4lz1",
+            "user":2
+        },
+        {
+            "id": "25",
+            "name": "孙燕姿.mp3",
+            "path": "data/所有人明星说话/孙燕姿.mp3",
+            "model_id": "S_H2csx4lz1",
+            "user":2
+        }
+    ],
+    "default": {
+        "id": "0",
+        "name": "周杰伦.MP3",
+        "model_id": "S_NcV7oCTw1"
+    },
+    "auth": [
+        {
+            "id": 1,
+            "tts_appid": "2423455087",
+            "tts_access_token":"UBnRWB_TOdHd6dRM3k2S24S1b_fHZ1b0",
+            "tts_cluster": "volcano_icl",
+            "tts_host": "openspeech.bytedance.com"
+        },
+        {
+            "id": 2,
+            "tts_appid": "7165194835",
+            "tts_access_token":"LsyVbliuK9ookiKpk-7ZaerYLLd32Lr3",
+            "tts_cluster": "volcano_icl",
+            "tts_host": "openspeech.bytedance.com"
+        }
+    ]
+}

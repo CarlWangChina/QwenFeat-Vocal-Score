@@ -1,0 +1,3 @@
+[submodule "audioscore/src/SongEval"]
+	path = audioscore/src/SongEval
+	url = git@github.com:ASLP-lab/SongEval.git
