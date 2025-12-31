@@ -2,30 +2,22 @@ Copyright (c) 2025 魅KTV. All rights reserved.
 
 PROJECT: QwenFeat-Vocal-Score / Singing-Aesthetic-Assessment
 
-TERMS AND CONDITIONS
+1. LICENSE MODEL
+This project is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (CC BY-NC-ND 4.0). 
+To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-nd/4.0/
 
-1. Ownership
-This software, including code, models, and documentation, is the proprietary 
-property of 魅KTV.
+2. OWNERSHIP
+All code, model weights, and documentation are the proprietary property of 魅KTV.
 
-2. Non-Commercial Use License
-Permission is hereby granted for individuals and institutions to use this 
-project for NON-COMMERCIAL, educational, and academic research purposes only.
+3. COMMERCIAL RESTRICTIONS
+As per the NC (Non-Commercial) clause of the license, any commercial use is STRICTLY PROHIBITED. This includes but is not limited to:
+- Integration into commercial software or hardware.
+- Use in for-profit karaoke systems or AI services.
+- Reselling or redistributing for financial gain.
 
-3. Commercial Use Prohibition
-Any commercial use of this project is STRICTLY PROHIBITED. This includes, 
-but is not limited to:
-- Using the code/model in commercial products or services.
-- Selling or redistributing the software for profit.
-- Using the software for internal commercial operations.
+4. COMMERCIAL LICENSING & INQUIRIES
+For permissions beyond the scope of this non-commercial license, or to apply for a commercial license, please contact:
+Email: 3156018231@qq.com
 
-4. Commercial Licensing
-For any commercial inquiries or to apply for a commercial license, please 
-contact: 3156018231@qq.com.
-
-5. No Derivatives
-You may not modify, transform, or build upon this material for public 
-distribution without explicit written permission.
-
-6. Attribution
-Any authorized use must retain this copyright notice.
+5. ATTRIBUTION
+Any authorized use must include this copyright notice and properly attribute the work to 魅KTV.
