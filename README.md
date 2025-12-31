@@ -1,3 +1,202 @@
+# VocalVerse Project Overview
+
+## 📜 License & Copyright
+
+1. **License Framework**: This project is licensed under the **[CC BY-NC-ND 4.0](http://creativecommons.org/licenses/by-nc-nd/4.0/) (Attribution-NonCommercial-NoDerivs 4.0 International)** license.
+2. **Non-Commercial Use**: The code, model weights, and documentation in this project are free for academic exchange and personal educational purposes only.
+3. **Commercial Use Strictly Prohibited**: Without written authorization, it is strictly forbidden to use any part of this project for any form of commercial profit (including but not limited to integration into commercial software, providing commercial AI services, etc.).
+4. **Commercial Licensing Inquiries**: For commercial cooperation or to obtain a commercial license, please contact: **3156018231@qq.com**.
+
+---
+
+## 🌍 Version Notice & Legacy Archive
+
+**Legacy Repository**:  
+[https://github.com/CarlWangChina/Singing-Aesthetic-Assessment](https://github.com/CarlWangChina/Singing-Aesthetic-Assessment)
+
+
+## 📖 Paper Citation & Instructions
+
+For detailed technical solutions, experimental results, and theoretical support regarding this implementation, please refer to our research paper. If you use the code or models from this repository in your research or work, please cite our paper.
+
+### Paper Information
+
+**Title**: Singing Timbre Popularity Assessment Based on Multimodal Large Foundation Model
+**Conference**: Proceedings of the 33rd ACM International Conference on Multimedia (MM '25)
+
+* **ACM Digital Library (Official Version)**: [https://doi.org/10.1145/3746027.3758148](https://doi.org/10.1145/3746027.3758148)
+* **arXiv (Free Preview Version)**: [https://www.arxiv.org/abs/2512.06999](https://www.arxiv.org/abs/2512.06999) 
+  *(Note: The arXiv version is identical in content to the official ACM DL version)*
+
+### Citation Format
+
+#### ACM Reference Format
+> Zihao Wang, Ruibin Yuan, Ziqi Geng, Hengjia Li, Xingwei Qu, Xinyi Li, Songye Chen, Haoying Fu, Roger B. Dannenberg, and Kejun Zhang. 2025. Singing Timbre Popularity Assessment Based on Multimodal Large Foundation Model. In Proceedings of the 33rd ACM International Conference on Multimedia (MM '25). Association for Computing Machinery, New York, NY, USA, 12227–12236. https://doi.org/10.1145/3746027.3758148
+
+#### BibTeX
+```bibtex
+@inproceedings{10.1145/3746027.3758148,
+author = {Wang, Zihao and Yuan, Ruibin and Geng, Ziqi and Li, Hengjia ox and Qu, Xingwei and Li, Xinyi and Chen, Songye and Fu, Haoying and Dannenberg, Roger B. and Zhang, Kejun},
+title = {Singing Timbre Popularity Assessment Based on Multimodal Large Foundation Model},
+year = {2025},
+isbn = {9798400720352},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {[https://doi.org/10.1145/3746027.3758148](https://doi.org/10.1145/3746027.3758148)},
+doi = {10.1145/3746027.3758148},
+booktitle = {Proceedings of the 33rd ACM International Conference on Multimedia},
+pages = {12227–12236},
+numpages = {10},
+keywords = {computational music aesthetics, descriptive feedback, multi-dimensional evaluation, multimodal foundation models, singing timbre popularity, singing voice assessment},
+location = {Dublin, Ireland},
+series = {MM '25}
+}
+```
+
+Assessing the Popularity of Singing Timbre with a Multimodal Large Foundation Model
+
+This work sincerely acknowledges the support of previous works such as QwenAudio, SongEval, and MuQ.
+
+[qwenaudio](./qwenaudio/README.md) **Qwen Comment Generation + Scoring Module**: This includes a Lora-trained version of Qwen-audio. It takes audio as input and outputs comments on issues in the singing voice (equivalent to descriptive tagging). These comments are then used as input for a "deep thinking" phase to perform the final timbre scoring. Finally, a TTS system with a singer's voice is used to generate the vocal critique. The full workflow is:
+
+1. The fine-tuned Qwen model generates comments on singing issues.
+2. Comments and audio are fed back into the Qwen scoring model to assist in evaluation (acting as a "deep thinking" step).
+3. Another LLM call polishes the comments, generates a summary, and provides vocal suggestions.
+4. Finally, the summary is read aloud using the corresponding singer's voice.
+
+All weights for this section are preserved. Model directory link: Download the full repository containing models from Hugging Face: [https://huggingface.co/karl-wang/QwenFeat-Vocal-Score/] 
+
+[audioscore](./audioscore/README.md) **MuQ Scoring & Ranking Module**: Contains two versions (with and without decoupling) using the same codebase, organized into a single directory.
+
+1. **Scoring using MuQ as encoder + scoring head**: No decoupling. This architecture is basically the same as the SongEval work. The unfrozen MuQ Lora weights and the scoring head weights are preserved. Link: [https://huggingface.co/karl-wang/QwenFeat-Vocal-Score/] 
+
+2. **Decoupling Experiment**: Uses the speaker encoder from SaMoye-SVC for reverse gradient training to decouple speaker identity features, aiming to improve aesthetic understanding accuracy. The code is compatible with both versions. Note: Decoupling weights were lost due to a server move. However, experiments using SaMoye’s or Wespeaker’s encoder for reverse gradient training showed that while training and convergence are difficult (easier with smaller batch sizes), the final aesthetic assessment accuracy slightly improved, proving that decoupling is effective.
+
+**Note**: This repository does not contain the model weights. Researchers should download the full repository including models from Hugging Face: [https://huggingface.co/karl-wang/QwenFeat-Vocal-Score/] 
+
+
+# VocalVerse1: Singing Evaluation Model based on QwenAudio
+
+[qwenaudio](./qwenaudio/README.md) **Qwen Comment Generation + Scoring Module**: (See description above for workflow details).
+
+## Usage
+
+### Download Models
+Download the following directory and place it in the current path:
+https://huggingface.co/karl-wang/QwenFeat-Vocal-Score/tree/main/qwenaudio/ckpts
+Or simply run: `git clone https://huggingface.co/karl-wang/QwenFeat-Vocal-Score`
+
+### Start Service
+
+`python scripts/infer_service.py`  
+Call via CURL:  
+`curl -X POST http://localhost:8080/score -F "file=@/path/to/audio"`
+
+### CLI Usage
+`python scripts/infer.py path_to_audio.wav output_file.txt`
+
+### Python API
+
+Refer to `tests/test_score.py` for implementation.
+
+```python
+import qwenaudio.processor
+import qwenaudio.prompts
+import librosa
+
+# Initialize model and processor
+processor = qwenaudio.processor.create_processor(
+            "ckpts/generator-lora-32-16-scoreonly-f16/best_model_epoch_13/lora_weights",
+            "ckpts/generator-lora-32-16-textonly-simple-v2-int4/best_model_epoch_16/lora_weights"
+        )
+
+# Scoring
+audio_path = "/home/w-4090/cutted_score_audio_separated/446892/344523004.wav"
+data, sr = librosa.load(audio_path, sr=processor.processor.feature_extractor.sampling_rate, mono=True)
+data = data[:processor.processor.feature_extractor.sampling_rate * 30] # Use first 30 seconds
+print(data.shape)
+
+for i in range(4):
+    print("test:", qwenaudio.prompts.prompt_mapper_reverse[i]) # Meanings of parameters 0-4
+    score = processor.generate(data, i) # Generate score
+```
+
+If model loading hangs, try using a Hugging Face mirror:
+`export HF_ENDPOINT=https://hf-mirror.com`
+
+# VocalVerse2: Vocal Recording Scoring Model based on MuQ
+
+[audioscore](./audioscore/README.md) **MuQ Scoring & Ranking Module**: (See description above for details on the two versions).
+
+## Usage
+
+### Environment Setup
+
+```bash
+conda create -n audioscore python=3.10
+conda activate audioscore
+pip install -r requirements.txt
+```
+
+### Download Models
+Download the following directory and place it in the current path:
+https://huggingface.co/karl-wang/QwenFeat-Vocal-Score/tree/main/audioscore/ckpts
+Or `git clone https://huggingface.co/karl-wang/QwenFeat-Vocal-Score`
+
+### Inference
+(Runnable code is available in `python tests/test_generate_score.py`)
+
+```python
+import os, sys
+import audioscore.model
+
+if __name__ == "__main__":
+    ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    model = audioscore.model.SongEvalGenerator_audio_lora()
+    # Load model
+    model.load_model(os.path.join(ROOT_DIR, "ckpts", "SongEvalGenerator", "step_2_al_audio", "best_model_step_132000")) 
+    model = model.half() # Optional
+    model = model.cuda()
+
+    # Perform scoring
+    score = model.generate_tag("/data/nfs/audioscore/data/sort/data/audio/203887_250822105518005501.m4a")
+
+    print("score:", score)
+```
+
+Run tests directly:
+```bash
+python tests/test_generate_score.py
+```
+
+## Training
+
+Direct Training:
+`torchrun --nproc_per_node=4 --nnodes=1 scripts/train/train_sort_audio.py`
+
+Adversarial Training (Decoupling with SaMoye spk encoder):
+`torchrun --nproc_per_node=4 --nnodes=1 scripts/train/train_sort_audio_grl.py`
+
+# Additional Notes for VocalVerse1 (QwenAudio based)
+
+- Use the `qwenaudio` conda environment; weights for both models have been included.
+- Added `infer_service.py` and `infer.py` scripts; instructions are in the README. `test/test_score.py` is functional.
+- The prompts are located at `/home/w-4090/projects/qwenaudio/src/qwenaudio/prompts.py`.
+- Test scripts are available at `/home/w-4090/projects/qwenaudio/tests/test_processor_v2.py` and `/home/w-4090/projects/qwenaudio/tests/test_processor_v3.py`.
+- For the code in Figures 1 and 2: when loading models locally, change the model paths in `model.py` and `processor.py` to your local paths.
+
+<img width="1601" height="315" alt="77b6f8227c1d4af030fd7e2e0af8c8ab" src="https://github.com/user-attachments/assets/191e8e3f-2b67-43c0-b51e-f0b50f5d7dd6" />
+<img width="1335" height="165" alt="76943b4c05d12bf090aecc602c8430b4" src="https://github.com/user-attachments/assets/8b058f65-de12-44c6-b041-e7db5ef97095" />
+
+- Figure 3 shows the two trained Lora models. These are ready and should be uploaded.
+<img width="418" height="56" alt="image" src="https://github.com/user-attachments/assets/e07494e7-eedc-44bc-b885-bf825de3d3dc" />
+
+- The entire project including code and Lora weights is included, but the base model must be downloaded from the internet.
+- If only the final classifier is active and the Lora on the model body is not, accuracy will be very low. Once Lora weights are active, accuracy reaches 80%-90%. (Encoder + LLM Decode + Lora + Classifier).
+- Figure 4 shows that the `Qwen2-Audio-7B-Instruct/` base model is required. It was previously downloaded automatically to `.cache`; if downloaded manually, re-specify the path in the code.
+
+<img width="785" height="858" alt="32e73d7a89338a602f350225e859b67f" src="https://github.com/user-attachments/assets/26b3f4f9-2595-4567-934d-10d089785464" />
+
 # VocalVerse项目总览
 
 ## 📜 许可协议与版权声明 | License & Copyright
