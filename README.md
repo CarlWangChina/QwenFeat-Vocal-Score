@@ -8,12 +8,11 @@
 4. **商业授权申请**：如有商业合作意向或需获得商业使用许可，请务必联系邮箱：**3156018231@qq.com**。
 ---
 
-## 🌍 仓库说明 | Repository Notes
+## 🌍 版本说明与旧版存档 | Version Notice & Legacy Archive
 
-* **中文说明**：本仓库主要提供中文说明及相关文档。
-* **English Version**: This repository is primarily in Chinese. For the English version, please refer to: [https://github.com/CarlWangChina/Singing-Aesthetic-Assessment](https://github.com/CarlWangChina/Singing-Aesthetic-Assessment)
+**Legacy Repository / 旧版项目地址**: 
+[https://github.com/CarlWangChina/Singing-Aesthetic-Assessment](https://github.com/CarlWangChina/Singing-Aesthetic-Assessment)
 
----
 
 ## 📖 论文引用与说明
 
@@ -54,6 +53,8 @@ series = {MM '25}
 ```
 
 Assessing the Popularity of Singing Timbre with a Multimodal Large Foundation Model
+
+本工作郑重感谢 QwenAudio, SongEval, MuQ等先前工作的支持. 
 
 [qwenaudio](./qwenaudio/README.md) Qwen评语生成+打分部分. 包含输入音频给Qwen-audio我们用Lora训练后的版本, 输出针对歌声的存在问题的评语 相当于对音频做描述性打标, 然后评语再作为输入作为深度思考部分, 最终进行音色打分, 然后用歌手音色的TTS念出来生成点评语音, 这一整套的流程:
 
@@ -130,33 +131,6 @@ for i in range(4):
 如果在加载模型时卡住，可启用huggingface镜像
 `export HF_ENDPOINT=https://hf-mirror.com`
 
-### 其他注意事项 of qwenaudio歌唱评价模型
-
-conda环境用qwenaudio, 两个模型权重都复制进去了
-
-我加了infer_service.py和infer.py两个脚本，使用方法我写README.md里面了. test/test_score.py可以运行
-
-/home/w-4090/projects/qwenaudio/src/qwenaudio/prompts.py 这个是prompt所在的位置.
-
-测试脚本在/home/w-4090/projects/qwenaudio/tests/test_processor_v2.py和/home/w-4090/projects/qwenaudio/tests/test_processor_v3.py.
-
-附图1和2的代码, 加载本地模型把model.py和processor.py中的模型路径改成本地的就行了
-
-<img width="1601" height="315" alt="77b6f8227c1d4af030fd7e2e0af8c8ab" src="https://github.com/user-attachments/assets/191e8e3f-2b67-43c0-b51e-f0b50f5d7dd6" />
-<img width="1335" height="165" alt="76943b4c05d12bf090aecc602c8430b4" src="https://github.com/user-attachments/assets/8b058f65-de12-44c6-b041-e7db5ef97095" />
-
-附图3中两个是训练的lora模型. 这个是训好的. 这两个要上传
-<img width="418" height="56" alt="image" src="https://github.com/user-attachments/assets/e07494e7-eedc-44bc-b885-bf825de3d3dc" />
-
-整个工程包括代码和lora权重都在里面，但是base模型需要联网下载
-
-如果只生效了结尾的分类器，模型本体的lora没生效，准确率会很低；lora权重生效后，准确率能80多 接近9成.  编码器+llm解码+lora+分类器
-
-附图4 中Qwen2-Audio-7B-Instruct/这个base 模型都要，之前是自动下载到.cache里面的，单独下载的应该要代码里面重新指定路径
-
-<img width="785" height="858" alt="32e73d7a89338a602f350225e859b67f" src="https://github.com/user-attachments/assets/26b3f4f9-2595-4567-934d-10d089785464" />
-
-
 # VocalVerse2: 基于MuQ的人声录音打分模型 
 
 [audioscore](./audioscore/README.md) MuQ打分、排序部分. 包含 加解耦 和 不加解耦 两个版本, 使用的同一套代码，只分了一个目录. 
@@ -214,3 +188,30 @@ python tests/test_generate_score.py
 
 对抗训练（使用samoye的spk encoder进行解耦）  
 `torchrun --nproc_per_node=4 --nnodes=1  scripts/train/train_sort_audio_grl.py`  
+
+## VocalVerse1: 基于qwenaudio的歌唱评价模型 的其他注意事项
+
+conda环境用qwenaudio, 两个模型权重都复制进去了
+
+我加了infer_service.py和infer.py两个脚本，使用方法我写README.md里面了. test/test_score.py可以运行
+
+/home/w-4090/projects/qwenaudio/src/qwenaudio/prompts.py 这个是prompt所在的位置.
+
+测试脚本在/home/w-4090/projects/qwenaudio/tests/test_processor_v2.py和/home/w-4090/projects/qwenaudio/tests/test_processor_v3.py.
+
+附图1和2的代码, 加载本地模型把model.py和processor.py中的模型路径改成本地的就行了
+
+<img width="1601" height="315" alt="77b6f8227c1d4af030fd7e2e0af8c8ab" src="https://github.com/user-attachments/assets/191e8e3f-2b67-43c0-b51e-f0b50f5d7dd6" />
+<img width="1335" height="165" alt="76943b4c05d12bf090aecc602c8430b4" src="https://github.com/user-attachments/assets/8b058f65-de12-44c6-b041-e7db5ef97095" />
+
+附图3中两个是训练的lora模型. 这个是训好的. 这两个要上传
+<img width="418" height="56" alt="image" src="https://github.com/user-attachments/assets/e07494e7-eedc-44bc-b885-bf825de3d3dc" />
+
+整个工程包括代码和lora权重都在里面，但是base模型需要联网下载
+
+如果只生效了结尾的分类器，模型本体的lora没生效，准确率会很低；lora权重生效后，准确率能80多 接近9成.  编码器+llm解码+lora+分类器
+
+附图4 中Qwen2-Audio-7B-Instruct/这个base 模型都要，之前是自动下载到.cache里面的，单独下载的应该要代码里面重新指定路径
+
+<img width="785" height="858" alt="32e73d7a89338a602f350225e859b67f" src="https://github.com/user-attachments/assets/26b3f4f9-2595-4567-934d-10d089785464" />
+
