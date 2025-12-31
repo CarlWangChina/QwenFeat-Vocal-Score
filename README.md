@@ -85,6 +85,19 @@ for i in range(4):
 如果在加载模型时卡住，可启用huggingface镜像
 `export HF_ENDPOINT=https://hf-mirror.com`
 
+conda环境用qwenaudio, 两个模型权重都复制进去了
+
+我加了infer_service.py和infer.py两个脚本，使用方法我写README.md里面了. test/test_score.py可以运行
+
+/home/w-4090/projects/qwenaudio/src/qwenaudio/prompts.py 这个是prompt所在的位置.
+
+测试脚本在/home/w-4090/projects/qwenaudio/tests/test_processor_v2.py和/home/w-4090/projects/qwenaudio/tests/test_processor_v3.py.
+
+附图1和2的代码, 加载本地模型把model.py和processor.py中的模型路径改成本地的就行了
+
+<img width="1601" height="315" alt="77b6f8227c1d4af030fd7e2e0af8c8ab" src="https://github.com/user-attachments/assets/191e8e3f-2b67-43c0-b51e-f0b50f5d7dd6" />
+![Uploading 76943b4c05d12bf090aecc602c8430b4.png…]()
+
 # 人声录音打分模型 
 
 [audioscore](./audioscore/README.md) MuQ打分、排序部分. 包含 加解耦 和 不加解耦 两个版本, 使用的同一套代码，只分了一个目录. 
