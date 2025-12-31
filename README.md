@@ -57,6 +57,8 @@ Assessing the Popularity of Singing Timbre with a Multimodal Large Foundation Mo
 
 This work sincerely acknowledges the support of previous works such as QwenAudio, SongEval, and MuQ.
 
+# VocalVerse1: Singing Evaluation Model based on QwenAudio
+
 [qwenaudio](./qwenaudio/README.md) **Qwen Comment Generation + Scoring Module**: This includes a Lora-trained version of Qwen-audio. It takes audio as input and outputs comments on issues in the singing voice (equivalent to descriptive tagging). These comments are then used as input for a "deep thinking" phase to perform the final timbre scoring. Finally, a TTS system with a singer's voice is used to generate the vocal critique. The full workflow is:
 
 1. The fine-tuned Qwen model generates comments on singing issues.
@@ -66,18 +68,6 @@ This work sincerely acknowledges the support of previous works such as QwenAudio
 
 All weights for this section are preserved. Model directory link: Download the full repository containing models from Hugging Face: [https://huggingface.co/karl-wang/QwenFeat-Vocal-Score/] 
 
-[audioscore](./audioscore/README.md) **MuQ Scoring & Ranking Module**: Contains two versions (with and without decoupling) using the same codebase, organized into a single directory.
-
-1. **Scoring using MuQ as encoder + scoring head**: No decoupling. This architecture is basically the same as the SongEval work. The unfrozen MuQ Lora weights and the scoring head weights are preserved. Link: [https://huggingface.co/karl-wang/QwenFeat-Vocal-Score/] 
-
-2. **Decoupling Experiment**: Uses the speaker encoder from SaMoye-SVC for reverse gradient training to decouple speaker identity features, aiming to improve aesthetic understanding accuracy. The code is compatible with both versions. Note: Decoupling weights were lost due to a server move. However, experiments using SaMoye’s or Wespeaker’s encoder for reverse gradient training showed that while training and convergence are difficult (easier with smaller batch sizes), the final aesthetic assessment accuracy slightly improved, proving that decoupling is effective.
-
-**Note**: This repository does not contain the model weights. Researchers should download the full repository including models from Hugging Face: [https://huggingface.co/karl-wang/QwenFeat-Vocal-Score/] 
-
-
-# VocalVerse1: Singing Evaluation Model based on QwenAudio
-
-[qwenaudio](./qwenaudio/README.md) **Qwen Comment Generation + Scoring Module**: (See description above for workflow details).
 
 ## Usage
 
@@ -126,7 +116,13 @@ If model loading hangs, try using a Hugging Face mirror:
 
 # VocalVerse2: Vocal Recording Scoring Model based on MuQ
 
-[audioscore](./audioscore/README.md) **MuQ Scoring & Ranking Module**: (See description above for details on the two versions).
+[audioscore](./audioscore/README.md) **MuQ Scoring & Ranking Module**: Contains two versions (with and without decoupling) using the same codebase, organized into a single directory.
+
+1. **Scoring using MuQ as encoder + scoring head**: No decoupling. This architecture is basically the same as the SongEval work. The unfrozen MuQ Lora weights and the scoring head weights are preserved. Link: [https://huggingface.co/karl-wang/QwenFeat-Vocal-Score/] 
+
+2. **Decoupling Experiment**: Uses the speaker encoder from SaMoye-SVC for reverse gradient training to decouple speaker identity features, aiming to improve aesthetic understanding accuracy. The code is compatible with both versions. Note: Decoupling weights were lost due to a server move. However, experiments using SaMoye’s or Wespeaker’s encoder for reverse gradient training showed that while training and convergence are difficult (easier with smaller batch sizes), the final aesthetic assessment accuracy slightly improved, proving that decoupling is effective.
+
+**Note**: This repository does not contain the model weights. Researchers should download the full repository including models from Hugging Face: [https://huggingface.co/karl-wang/QwenFeat-Vocal-Score/] 
 
 ## Usage
 
@@ -255,25 +251,6 @@ Assessing the Popularity of Singing Timbre with a Multimodal Large Foundation Mo
 
 本工作郑重感谢 QwenAudio, SongEval, MuQ等先前工作的支持. 
 
-[qwenaudio](./qwenaudio/README.md) Qwen评语生成+打分部分. 包含输入音频给Qwen-audio我们用Lora训练后的版本, 输出针对歌声的存在问题的评语 相当于对音频做描述性打标, 然后评语再作为输入作为深度思考部分, 最终进行音色打分, 然后用歌手音色的TTS念出来生成点评语音, 这一整套的流程:
-
-1.qwen微调训练后的模型生成歌唱问题的评语.
-2.评语+音频一起再次给qwen打分模型来辅助打分(相当于做了一次深度思考). 
-3.最后再调一次大模型来对评语进行润色,  生成总结 , 然后给出唱法建议. 
-4.在最后把总结用对应歌手的声音念出来. 
-
-这一块的所有权重都保留了, 模型对应目录链接: 前往huggingface下载包含模型的完整仓库： [https://huggingface.co/karl-wang/QwenFeat-Vocal-Score/]  
-
-[audioscore](./audioscore/README.md) MuQ打分、排序部分. 包含 加解耦 和 不加解耦 两个版本, 使用的同一套代码，只分了一个目录. 
-
-1、使用MuQ作为encoder+后接打分器进行打分的代码,不加解耦,这一块的架构跟SongEval工作基本相同.  其中MuQ解冻用lora的权重、后面打分器的权重, 都保留了,权重对应目录链接:  [https://huggingface.co/karl-wang/QwenFeat-Vocal-Score/]  
-
-2、加解耦 , 采用SaMoye-SVC的 spk encoder作为反向梯度训练、对说话人身份特征进行解耦合, 来提升对美学理解的准确度的实验部分. 
-二者项目代码是同一个、兼容的. 加解耦部分因为机房退租时没来得及拷贝下来, 导致模型权重丢失了. 但是使用SaMoye的spk encoder或者用wespeaker, 进行反向梯度训练来解耦合, 看看效果是否会变好的实验,实验结果大致如下: 使用SaMoye的spk encoder或者 wespeaker的encoder, 分别作为反向梯度来解耦合, 然后打分, 都特别难训练、难收敛. 但是batchsize小一点也能收敛. 最后评价美学等级的准确率, 效果比原来好一点点. 说明这个解耦部分确实是有用的. 
-
-最后注意: 本仓库不包含模型部分, 研究者需要前往huggingface下载包含模型的完整仓库： [https://huggingface.co/karl-wang/QwenFeat-Vocal-Score/]  
-  
-
 # VocalVerse1: 基于qwenaudio的歌唱评价模型
 
 [qwenaudio](./qwenaudio/README.md) Qwen评语生成+打分部分. 包含输入音频给Qwen-audio我们用Lora训练后的版本, 输出针对歌声的存在问题的评语 相当于对音频做描述性打标, 然后评语再作为输入作为深度思考部分, 最终进行音色打分, 然后用歌手音色的TTS念出来生成点评语音, 这一整套的流程:
@@ -339,6 +316,8 @@ for i in range(4):
 2、加解耦 , 采用SaMoye-SVC的 spk encoder作为反向梯度训练、对说话人身份特征进行解耦合, 来提升对美学理解的准确度的实验部分. 
 二者项目代码是同一个、兼容的. 加解耦部分因为机房退租时没来得及拷贝下来, 导致模型权重丢失了. 但是使用SaMoye的spk encoder或者用wespeaker, 进行反向梯度训练来解耦合, 看看效果是否会变好的实验,实验结果大致如下: 使用SaMoye的spk encoder或者 wespeaker的encoder, 分别作为反向梯度来解耦合, 然后打分, 都特别难训练、难收敛. 但是batchsize小一点也能收敛. 最后评价美学等级的准确率, 效果比原来好一点点. 说明这个解耦部分确实是有用的. 
 
+最后注意: 本仓库不包含模型部分, 研究者需要前往huggingface下载包含模型的完整仓库： [https://huggingface.co/karl-wang/QwenFeat-Vocal-Score/]  
+
 ## 使用方法：  
 
 ### 安装环境  
@@ -388,7 +367,7 @@ python tests/test_generate_score.py
 对抗训练（使用samoye的spk encoder进行解耦）  
 `torchrun --nproc_per_node=4 --nnodes=1  scripts/train/train_sort_audio_grl.py`  
 
-# VocalVerse1: 基于qwenaudio的歌唱评价模型 的其他注意事项
+# 其他注意事项 of VocalVerse1: 基于qwenaudio的歌唱评价模型
 
 conda环境用qwenaudio, 两个模型权重都复制进去了
 
