@@ -96,7 +96,19 @@ conda环境用qwenaudio, 两个模型权重都复制进去了
 附图1和2的代码, 加载本地模型把model.py和processor.py中的模型路径改成本地的就行了
 
 <img width="1601" height="315" alt="77b6f8227c1d4af030fd7e2e0af8c8ab" src="https://github.com/user-attachments/assets/191e8e3f-2b67-43c0-b51e-f0b50f5d7dd6" />
-![Uploading 76943b4c05d12bf090aecc602c8430b4.png…]()
+<img width="1335" height="165" alt="76943b4c05d12bf090aecc602c8430b4" src="https://github.com/user-attachments/assets/8b058f65-de12-44c6-b041-e7db5ef97095" />
+
+附图3中两个是训练的lora模型. 这个是训好的. 这两个要上传
+<img width="418" height="56" alt="image" src="https://github.com/user-attachments/assets/e07494e7-eedc-44bc-b885-bf825de3d3dc" />
+
+整个工程包括代码和lora权重都在里面，但是base模型需要联网下载
+
+如果只生效了结尾的分类器，模型本体的lora没生效，准确率会很低；lora权重生效后，准确率能80多 接近9成.  编码器+llm解码+lora+分类器
+
+附图4 中Qwen2-Audio-7B-Instruct/这个base 模型都要，之前是自动下载到.cache里面的，单独下载的应该要代码里面重新指定路径
+
+<img width="785" height="858" alt="32e73d7a89338a602f350225e859b67f" src="https://github.com/user-attachments/assets/26b3f4f9-2595-4567-934d-10d089785464" />
+
 
 # 人声录音打分模型 
 
