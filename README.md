@@ -1,12 +1,60 @@
 # VocalVerse项目总览
 
-## 📜 License / 许可协议
+## 📜 许可协议与版权声明 | License & Copyright
 
-本项目采用 **[CC BY-NC-ND 4.0](http://creativecommons.org/licenses/by-nc-nd/4.0/) (署名-非商业性使用-禁止演绎)** 国际许可协议。
+**本项目版权归属于 魅KTV (Mei KTV)，受法律保护。**
 
-- **版权所有**：魅KTV (Mei KTV)
-- **商业禁止**：严禁任何未经授权的商业用途。
-- **商业授权联系**：3156018231@qq.com
+1. **协议框架**：本项目采用 **[CC BY-NC-ND 4.0](http://creativecommons.org/licenses/by-nc-nd/4.0/) (署名-非商业性使用-禁止演绎)** 国际许可协议。
+2. **非商业用途**：本项目代码、模型权重及文档仅限学术交流和个人教育用途免费使用。
+3. **严禁商用**：未经官方书面授权，严禁将本项目任何部分用于任何形式的商业营利目的（包括但不限于集成至商业软件、提供营利性 AI 服务等）。
+4. **商业授权申请**：如有商业合作意向或需获得商业使用许可，请务必联系官方邮箱：**3156018231@qq.com**。
+
+---
+
+## 🌍 仓库说明 | Repository Notes
+
+* **中文说明**：本仓库主要提供中文说明及相关文档。
+* **English Version**: This repository is primarily in Chinese. For the English version, please refer to: [https://github.com/CarlWangChina/Singing-Aesthetic-Assessment](https://github.com/CarlWangChina/Singing-Aesthetic-Assessment)
+
+---
+
+## 📖 论文引用与说明
+
+关于本代码实现的详细技术方案、实验结果及理论支撑，请参考我们的研究论文。如果您在研究或工作中使用了本仓库的代码或模型，欢迎引用我们的论文。
+
+### 论文信息
+
+**标题**：Singing Timbre Popularity Assessment Based on Multimodal Large Foundation Model
+**会议**：Proceedings of the 33rd ACM International Conference on Multimedia (MM '25)
+
+* **ACM Digital Library (官方版本)**: [https://doi.org/10.1145/3746027.3758148](https://doi.org/10.1145/3746027.3758148)
+* **arXiv (免费预览版)**: [https://www.arxiv.org/abs/2512.06999](https://www.arxiv.org/abs/2512.06999) 
+  *(注：arXiv 版本内容与 ACM DL 官方版本完全一致)*
+
+### 引用格式
+
+#### ACM Reference Format
+> Zihao Wang, Ruibin Yuan, Ziqi Geng, Hengjia Li, Xingwei Qu, Xinyi Li, Songye Chen, Haoying Fu, Roger B. Dannenberg, and Kejun Zhang. 2025. Singing Timbre Popularity Assessment Based on Multimodal Large Foundation Model. In Proceedings of the 33rd ACM International Conference on Multimedia (MM '25). Association for Computing Machinery, New York, NY, USA, 12227–12236. https://doi.org/10.1145/3746027.3758148
+
+#### BibTeX
+```bibtex
+@inproceedings{10.1145/3746027.3758148,
+author = {Wang, Zihao and Yuan, Ruibin and Geng, Ziqi and Li, Hengjia and Qu, Xingwei and Li, Xinyi and Chen, Songye and Fu, Haoying and Dannenberg, Roger B. and Zhang, Kejun},
+title = {Singing Timbre Popularity Assessment Based on Multimodal Large Foundation Model},
+year = {2025},
+isbn = {9798400720352},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {[https://doi.org/10.1145/3746027.3758148](https://doi.org/10.1145/3746027.3758148)},
+doi = {10.1145/3746027.3758148},
+booktitle = {Proceedings of the 33rd ACM International Conference on Multimedia},
+pages = {12227–12236},
+numpages = {10},
+keywords = {computational music aesthetics, descriptive feedback, multi-dimensional evaluation, multimodal foundation models, singing timbre popularity, singing voice assessment},
+location = {Dublin, Ireland},
+series = {MM '25}
+}
+
 
 Assessing the Popularity of Singing Timbre with a Multimodal Large Foundation Model
 
