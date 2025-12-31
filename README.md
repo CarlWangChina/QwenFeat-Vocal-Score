@@ -1,18 +1,12 @@
 # Singing-Aesthetic-Assessment项目总览
 
-## ⚠️ 版权与商业限制声明 | License & Commercial Restriction
+## 📜 License / 许可协议
 
-**本项目版权归属于 魅KTV (Mei KTV)。**
+本项目采用 **[CC BY-NC-ND 4.0](http://creativecommons.org/licenses/by-nc-nd/4.0/) (署名-非商业性使用-禁止演绎)** 国际许可协议。
 
-1. **非商业用途**：本项目仅限学术交流和个人教育用途免费使用。
-2. **禁止商用**：未经官方书面授权，严禁将本项目（包含代码、模型权重、数据）用于任何商业营利目的。
-3. **商业授权申请**：如有商业合作意向或需获得商业使用许可，请务必发送申请至邮箱：**3156018231@qq.com**。
-
-**Copyright © 2025 Mei KTV. All rights reserved.**
-
-1. **Academic Use Only**: This project is for academic research and educational purposes ONLY.
-2. **Commercial Use Prohibited**: Commercial use of any kind is strictly prohibited without prior written authorization.
-3. **Licensing Inquiry**: For commercial licensing applications, please contact: **3156018231@qq.com**.
+- **版权所有**：魅KTV (Mei KTV)
+- **商业禁止**：严禁任何未经授权的商业用途。
+- **商业授权联系**：3156018231@qq.com
 
 Assessing the Popularity of Singing Timbre with a Multimodal Large Foundation Model
 
