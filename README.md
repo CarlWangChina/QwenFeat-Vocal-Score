@@ -1,4 +1,4 @@
-# Singing-Aesthetic-Assessment项目总览
+# VocalVerse项目总览
 
 ## 📜 License / 许可协议
 
@@ -29,7 +29,7 @@ Assessing the Popularity of Singing Timbre with a Multimodal Large Foundation Mo
 最后注意: 本仓库不包含模型部分, 研究者需要前往huggingface下载包含模型的完整仓库： [https://huggingface.co/karl-wang/QwenFeat-Vocal-Score/]  
   
 
-# qwenaudio打分工具  
+# VocalVerse1: 基于qwenaudio的歌唱评价模型
 
 [qwenaudio](./qwenaudio/README.md) Qwen评语生成+打分部分. 包含输入音频给Qwen-audio我们用Lora训练后的版本, 输出针对歌声的存在问题的评语 相当于对音频做描述性打标, 然后评语再作为输入作为深度思考部分, 最终进行音色打分, 然后用歌手音色的TTS念出来生成点评语音, 这一整套的流程:
 
@@ -85,6 +85,8 @@ for i in range(4):
 如果在加载模型时卡住，可启用huggingface镜像
 `export HF_ENDPOINT=https://hf-mirror.com`
 
+### 其他注意事项 of qwenaudio歌唱评价模型
+
 conda环境用qwenaudio, 两个模型权重都复制进去了
 
 我加了infer_service.py和infer.py两个脚本，使用方法我写README.md里面了. test/test_score.py可以运行
@@ -110,7 +112,7 @@ conda环境用qwenaudio, 两个模型权重都复制进去了
 <img width="785" height="858" alt="32e73d7a89338a602f350225e859b67f" src="https://github.com/user-attachments/assets/26b3f4f9-2595-4567-934d-10d089785464" />
 
 
-# 人声录音打分模型 
+# VocalVerse2: 基于MuQ的人声录音打分模型 
 
 [audioscore](./audioscore/README.md) MuQ打分、排序部分. 包含 加解耦 和 不加解耦 两个版本, 使用的同一套代码，只分了一个目录. 
 
