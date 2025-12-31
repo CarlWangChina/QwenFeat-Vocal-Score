@@ -189,7 +189,7 @@ python tests/test_generate_score.py
 对抗训练（使用samoye的spk encoder进行解耦）  
 `torchrun --nproc_per_node=4 --nnodes=1  scripts/train/train_sort_audio_grl.py`  
 
-## VocalVerse1: 基于qwenaudio的歌唱评价模型 的其他注意事项
+# VocalVerse1: 基于qwenaudio的歌唱评价模型 的其他注意事项
 
 conda环境用qwenaudio, 两个模型权重都复制进去了
 
