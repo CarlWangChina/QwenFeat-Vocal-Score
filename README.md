@@ -11,10 +11,15 @@
 Assessing the Popularity of Singing Timbre with a Multimodal Large Foundation Model
 
 [qwenaudio](./qwenaudio/README.md) Qwen评语生成+打分部分. 包含输入音频给Qwen-audio我们用Lora训练后的版本, 输出针对歌声的存在问题的评语 相当于对音频做描述性打标, 然后评语再作为输入作为深度思考部分, 最终进行音色打分, 然后用歌手音色的TTS念出来生成点评语音, 这一整套的流程:
+
 1、qwen微调训练后的模型生成歌唱问题的评语.
+
 2、评语+音频一起再次给qwen打分模型来辅助打分(相当于做了一次深度思考). 
+
 3、最后再调一次大模型来对评语进行润色,  生成总结 , 然后给出唱法建议. 
+
 4、在最后把总结用对应歌手的声音念出来. 
+
 这一块的所有权重都保留了, 模型对应目录链接: 前往huggingface下载包含模型的完整仓库： [https://huggingface.co/karl-wang/QwenFeat-Vocal-Score/]  
 
 [audioscore](./audioscore/README.md) MuQ打分、排序部分. 包含 加解耦 和 不加解耦 两个版本, 使用的同一套代码，只分了一个目录. 
