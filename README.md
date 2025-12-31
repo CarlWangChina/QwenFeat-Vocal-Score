@@ -1,4 +1,6 @@
-# 打分模型  
+# Singing-Aesthetic-Assessment
+
+Assessing the Popularity of Singing Timbre with a Multimodal Large Foundation Model
 
 [qwenaudio](./qwenaudio/README.md) 评语生成+打分部分  
 
