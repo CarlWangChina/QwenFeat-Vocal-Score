@@ -165,7 +165,7 @@ Run tests directly:
 python tests/test_generate_score.py
 ```
 
-## Training
+### Training
 
 Direct Training:
 `torchrun --nproc_per_node=4 --nnodes=1 scripts/train/train_sort_audio.py`
@@ -173,7 +173,7 @@ Direct Training:
 Adversarial Training (Decoupling with SaMoye spk encoder):
 `torchrun --nproc_per_node=4 --nnodes=1 scripts/train/train_sort_audio_grl.py`
 
-# Additional Notes for VocalVerse1 (QwenAudio based)
+## Additional Notes for VocalVerse1 (QwenAudio based)
 
 - Use the `qwenaudio` conda environment; weights for both models have been included.
 - Added `infer_service.py` and `infer.py` scripts; instructions are in the README. `test/test_score.py` is functional.
@@ -359,7 +359,7 @@ if __name__=="__main__":
 python tests/test_generate_score.py
 ```
 
-## 训练  
+### 训练  
 
 直接训练  
 `torchrun --nproc_per_node=4 --nnodes=1  scripts/train/train_sort_audio.py`  
@@ -367,7 +367,7 @@ python tests/test_generate_score.py
 对抗训练（使用samoye的spk encoder进行解耦）  
 `torchrun --nproc_per_node=4 --nnodes=1  scripts/train/train_sort_audio_grl.py`  
 
-# 其他注意事项 of VocalVerse1: 基于qwenaudio的歌唱评价模型
+## 其他注意事项 of VocalVerse1: 基于qwenaudio的歌唱评价模型
 
 conda环境用qwenaudio, 两个模型权重都复制进去了
 
