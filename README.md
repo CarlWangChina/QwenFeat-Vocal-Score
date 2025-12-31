@@ -1,5 +1,19 @@
 # Singing-Aesthetic-Assessment项目总览
 
+## ⚠️ 版权与商业限制声明 | License & Commercial Restriction
+
+**本项目版权归属于 魅KTV (Mei KTV)。**
+
+1. **非商业用途**：本项目仅限学术交流和个人教育用途免费使用。
+2. **禁止商用**：未经官方书面授权，严禁将本项目（包含代码、模型权重、数据）用于任何商业营利目的。
+3. **商业授权申请**：如有商业合作意向或需获得商业使用许可，请务必发送申请至邮箱：**3156018231@qq.com**。
+
+**Copyright © 2025 Mei KTV. All rights reserved.**
+
+1. **Academic Use Only**: This project is for academic research and educational purposes ONLY.
+2. **Commercial Use Prohibited**: Commercial use of any kind is strictly prohibited without prior written authorization.
+3. **Licensing Inquiry**: For commercial licensing applications, please contact: **3156018231@qq.com**.
+
 Assessing the Popularity of Singing Timbre with a Multimodal Large Foundation Model
 
 [qwenaudio](./qwenaudio/README.md) Qwen评语生成+打分部分. 包含输入音频给Qwen-audio我们用Lora训练后的版本, 输出针对歌声的存在问题的评语 相当于对音频做描述性打标, 然后评语再作为输入作为深度思考部分, 最终进行音色打分, 然后用歌手音色的TTS念出来生成点评语音, 这一整套的流程.  
@@ -11,23 +25,6 @@ Assessing the Popularity of Singing Timbre with a Multimodal Large Foundation Mo
 二者项目代码是同一个、兼容的. 加解耦部分因为机房退租时没来得及拷贝下来, 导致模型权重丢失了. 但是使用SaMoye的spk encoder或者用wespeaker, 进行反向梯度训练来解耦合, 看看效果是否会变好的实验,实验结果大致如下: 使用SaMoye的spk encoder或者 wespeaker的encoder, 分别作为反向梯度来解耦合, 然后打分, 都特别难训练、难收敛. 但是batchsize小一点也能收敛. 最后评价美学等级的准确率, 效果比原来好一点点. 说明这个解耦部分确实是有用的. 
 
 最后注意: 本仓库不包含模型部分, 研究者需要前往huggingface下载包含模型的完整仓库： [https://huggingface.co/karl-wang/QwenFeat-Vocal-Score/]  
-
-## ⚠️ 版权与商业限制声明 | License & Commercial Restriction
-
-**本项目版权归属于 魅KTV (Mei KTV)。**
-
-1. **非商业用途**：本项目仅限学术交流和个人教育用途免费使用。
-2. **禁止商用**：未经官方书面授权，严禁将本项目（包含代码、模型权重、数据）用于任何商业营利目的。
-3. **商业授权申请**：如有商业合作意向或需获得商业使用许可，请务必发送申请至邮箱：**3156018231@qq.com**。
-
----
-
-**Copyright © 2025 Mei KTV. All rights reserved.**
-
-1. **Academic Use Only**: This project is for academic research and educational purposes ONLY.
-2. **Commercial Use Prohibited**: Commercial use of any kind is strictly prohibited without prior written authorization.
-3. **Licensing Inquiry**: For commercial licensing applications, please contact: **3156018231@qq.com**.
-
 
 # qwenaudio打分工具  
 
