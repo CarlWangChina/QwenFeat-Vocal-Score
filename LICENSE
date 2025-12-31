@@ -1,23 +1,26 @@
-Copyright (c) 2025 魅KTV. All rights reserved.
+Copyright (c) 2025 [The Project Author(s)]. All rights reserved.
 
 PROJECT: QwenFeat-Vocal-Score / Singing-Aesthetic-Assessment
 
 1. LICENSE MODEL
 This project is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (CC BY-NC-ND 4.0). 
-To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-nd/4.0/
+To view a copy of this license, visit: http://creativecommons.org/licenses/by-nc-nd/4.0/
 
 2. OWNERSHIP
-All code, model weights, and documentation are the proprietary property of 魅KTV.
+All code, model weights, and documentation are the proprietary property of the project author(s).
 
-3. COMMERCIAL RESTRICTIONS
-As per the NC (Non-Commercial) clause of the license, any commercial use is STRICTLY PROHIBITED. This includes but is not limited to:
-- Integration into commercial software or hardware.
-- Use in for-profit karaoke systems or AI services.
-- Reselling or redistributing for financial gain.
+3. USAGE TERMS
+Under this license, you are free to share, copy, and redistribute the material in any medium or format, provided you follow these terms:
+- Attribution (BY): You must give appropriate credit, provide a link to the license, and indicate if changes were made.
+- Non-Commercial (NC): You may NOT use the material for commercial purposes. This includes, but is not limited to:
+    * Integration into commercial software or hardware.
+    * Use in for-profit karaoke systems or AI-based services.
+    * Reselling or redistributing for financial gain.
+- No-Derivatives (ND): If you remix, transform, or build upon the material, you may NOT distribute the modified material.
 
 4. COMMERCIAL LICENSING & INQUIRIES
 For permissions beyond the scope of this non-commercial license, or to apply for a commercial license, please contact:
 Email: 3156018231@qq.com
 
-5. ATTRIBUTION
-Any authorized use must include this copyright notice and properly attribute the work to 魅KTV.
+5. ATTRIBUTION REQUIREMENT
+Any authorized use or reference must include this copyright notice and properly attribute the work to the original project.
