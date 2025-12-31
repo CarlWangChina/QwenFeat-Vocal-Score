@@ -54,7 +54,7 @@ keywords = {computational music aesthetics, descriptive feedback, multi-dimensio
 location = {Dublin, Ireland},
 series = {MM '25}
 }
-
+```bibtex
 
 Assessing the Popularity of Singing Timbre with a Multimodal Large Foundation Model
 
