@@ -65,7 +65,7 @@ The Training_dataset-human_labels folder contains three core files, providing tw
 | **`Professional_multidim_annotations_raw_...xlsx`** | **Expert Multi-dimensional Labels:** Detailed annotations provided by two professional vocal coaches. It includes 1-5 integer scores across four core dimensions—**Timbre, Breath, Emotion, and Technique**—along with accompanying **textual critiques**. |
 | **`Professional_scoring_rubric.xlsx`** | **Scoring Standards:** The formal criteria (Rubric) used by experts to ensure consistency and high quality across the four dimensions. |
 
-### Data Scale & Open Source Statement
+### Data Scale
 
 According to the research paper:
 * **Original Data Pool:** We initially collected over **100,000** raw a cappella recordings.
