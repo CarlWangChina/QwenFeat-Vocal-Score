@@ -1,6 +1,6 @@
 # VocalVerse Project Overview
 
-This work sincerely acknowledges the support of previous works such as QwenAudio, SongEval, and MuQ. Assessing the Popularity of Singing Timbre with a Multimodal Large Foundation Model. 
+This work sincerely acknowledges the support of previous works such as QwenAudio, SongEval, and MuQ.
 
 ## 📜 License & Copyright
 
@@ -193,7 +193,7 @@ Adversarial Training (Decoupling with SaMoye spk encoder):
 
 # VocalVerse项目总览
 
-本工作郑重感谢 QwenAudio, SongEval, MuQ等先前工作的支持. 用多模态大基础模型评估歌唱音色的受欢迎程度. 
+本工作郑重感谢 QwenAudio, SongEval, MuQ等先前工作的支持.
 
 ## 📜 许可协议与版权声明 | License & Copyright
 
