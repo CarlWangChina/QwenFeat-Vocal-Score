@@ -57,7 +57,7 @@ series = {MM '25}
 
 ## 📂 Data Description
 
-The Training_dataset-human_labels folder contains three core files, providing two-level evaluation data (amateur and professional) for singing performance.
+The VocalVerse_Datasets-human_labels folder contains three core files, providing two-level evaluation data (amateur and professional) for singing performance.
 
 | File Name | Description |
 | :--- | :--- |
@@ -276,7 +276,7 @@ series = {MM '25}
 ``` 
 ## 📂 VocalVerse数据集
 
-Training_dataset-human_labels文件夹包含三个核心文件，提供了针对演唱表现的业余和专业两级评价数据。
+VocalVerse_Datasets-human_labels文件夹包含三个核心文件，提供了针对演唱表现的业余和专业两级评价数据。
 
 | 文件名 | 说明 |
 | :--- | :--- |
