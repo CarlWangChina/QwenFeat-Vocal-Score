@@ -2,6 +2,8 @@
 
 This work sincerely acknowledges the support of previous works such as QwenAudio, SongEval, and MuQ.
 
+**All project resources, including source code, model weights, and human-annotated datasets, are now fully open-sourced.**
+
 ## 📜 License & Copyright
 
 1. **License Framework**: This project is licensed under the **[CC BY-NC-ND 4.0](http://creativecommons.org/licenses/by-nc-nd/4.0/) (Attribution-NonCommercial-NoDerivs 4.0 International)** license.
@@ -222,6 +224,8 @@ Adversarial Training (Decoupling with SaMoye spk encoder):
 # VocalVerse项目总览
 
 本工作郑重感谢 QwenAudio, SongEval, MuQ等先前工作的支持.
+
+**本项目的所有资源，包括源代码、模型权重以及人工标注的数据集，现已全部开源。**
 
 ## 📜 许可协议与版权声明 | License & Copyright
 
