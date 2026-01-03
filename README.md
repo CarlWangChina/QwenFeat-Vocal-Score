@@ -55,6 +55,34 @@ series = {MM '25}
 }
 ```
 
+## 📂 Data Description
+
+The Training_dataset-human_labels folder contains three core files, providing two-level evaluation data (amateur and professional) for singing performance.
+
+| File Name | Description |
+| :--- | :--- |
+| **`Amateur_overall_mos_avg5.xlsx`** | **Amateur Consensus Scores:** Contains overall "pleasantness" ratings from 165 amateur annotators. Each recording was rated by 5 independent annotators on a 1-5 Likert scale, and this file provides the final Mean Opinion Scores (MOS). |
+| **`Professional_multidim_annotations_raw_...xlsx`** | **Expert Multi-dimensional Labels:** Detailed annotations provided by two professional vocal coaches. It includes 1-5 integer scores across four core dimensions—**Timbre, Breath, Emotion, and Technique**—along with accompanying **textual critiques**. |
+| **`Professional_scoring_rubric.xlsx`** | **Scoring Standards:** The formal criteria (Rubric) used by experts to ensure consistency and high quality across the four dimensions. |
+
+### Data Scale & Open Source Statement
+
+According to the research paper:
+* **Original Data Pool:** We initially collected over **100,000** raw a cappella recordings.
+* **Pre-screened Set:** Following automated preliminary screening via manual and RuleSignal scoring, a dataset of **10,000** clips was formed.
+* **Current Open-source Subset:** The files provided in this repository represent the **top 10% (approximately 1,000 recordings with high technical proficiency)**, which were subsequently subjected to intensive professional multi-dimensional annotation.
+
+### Annotation Methodology
+
+1. **Amateur Phase:** A total of 165 non-music major annotators participated. They employed a "forced distribution" method to ensure score differentiation and capture general aesthetic preferences.
+2. **Professional Phase:** Two senior vocal teachers provided dual-modality annotations (scores + descriptive text) to support the training of descriptive Multimodal Large Language Models (MLLMs).
+3. **Evaluation Dimensions:**
+    * **Timbre Quality:** The uniqueness, texture, and layering of the voice.
+    * **Breath Control:** Support and stability for complex phrases.
+    * **Emotional Expression:** The infectiousness and resonance of the performance.
+    * **Vocal Technique:** Mastery of singing skills.
+
+
 # VocalVerse1: Singing Evaluation Model based on QwenAudio
 
 [qwenaudio](./qwenaudio/README.md) **Qwen Comment Generation + Scoring Module**: This includes a Lora-trained version of Qwen-audio. It takes audio as input and outputs comments on issues in the singing voice (equivalent to descriptive tagging). These comments are then used as input for a "deep thinking" phase to perform the final timbre scoring. Finally, a TTS system with a singer's voice is used to generate the vocal critique. The full workflow is:
@@ -246,6 +274,32 @@ location = {Dublin, Ireland},
 series = {MM '25}
 }
 ``` 
+## 📂 VocalVerse数据集
+
+Training_dataset-human_labels文件夹包含三个核心文件，提供了针对演唱表现的业余和专业两级评价数据。
+
+| 文件名 | 说明 |
+| :--- | :--- |
+| **`Amateur_overall_mos_avg5.xlsx`** | **业余共识评分：** 包含 165 名业余标注者的整体“听感愉悦度”评分。每段录音由 5 名独立的标注者按 1-5 分 Likert 量表打分，该文件提供最终的平均意见分 (MOS)。 |
+| **`Professional_multidim_annotations_raw_...xlsx`** | **专家多维度标签：** 由两名专业声乐教练提供的详细标注。包含 **音色、气息、情感、技巧** 四个核心维度的 1-5 分整数评分及配套的**文字评语**。 |
+| **`Professional_scoring_rubric.xlsx`** | **评分标准：** 专家标注时使用的正式准则（Rubric），确保四个维度的标注具有一致性和高质量。 |
+
+### 数据规模
+
+根据论文研究：
+* **原始数据池：** 我们最初收集了超过 **100,000** 段原始清唱录音。
+* **预筛选集合：** 经过人工和RuleSignal评分自动初步筛选，形成了包含 **10,000** 段片段的数据集。
+* **当前开源子集：** 本仓库提供的文件代表了其中 **前 10%（约 1,000 段歌唱技术精湛的录音）**，这些录音随后, 经过了密集的专业多维度标注。
+
+### 标注方法
+
+1.  **业余阶段：** 共有 165 名非音乐专业标注者参与。他们采用“强制分布法”以确保分数具有区分度，从而捕捉大众的审美偏好。
+2.  **专业阶段：** 两名资深声乐教师提供双模态标注（分数 + 描述性文字），以支持描述性多模态大模型（MLLM）的训练。
+3.  **评价维度：**
+    * **音色 (Timbre Quality)：** 声音的独特度、质感和层次感。
+    * **气息 (Breath Control)：** 对复杂句子的支撑力和稳定性。
+    * **情感 (Emotional Expression)：** 演唱的感染力与共鸣感。
+    * **技巧 (Vocal Technique)：** 演唱技巧的熟练度。
 
 # VocalVerse1: 基于qwenaudio的歌唱评价模型
 
