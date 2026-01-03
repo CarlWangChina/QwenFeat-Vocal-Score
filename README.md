@@ -84,6 +84,17 @@ According to the research paper:
     * **Emotional Expression:** The infectiousness and resonance of the performance.
     * **Vocal Technique:** Mastery of singing skills.
 
+### 🎵 Audio Dataset Access & Mapping
+
+Due to GitHub's file size limitations, the raw audio recordings are hosted separately on Hugging Face.
+
+* **Dataset Repository**: [https://huggingface.co/datasets/karl-wang/VocalVerse-dataset/](https://huggingface.co/datasets/karl-wang/VocalVerse-dataset/)
+
+**How to Map Audio to Scores:**
+To utilize the dataset, you need to map the audio files to the annotations provided in the Excel sheets (in the `VocalVerse_Datasets-human_labels` folder):
+1.  **Locate IDs**: Refer to the **`Song ID`** and **`Record ID`** columns in the Excel files.
+2.  **Find Audio**: Use these IDs to locate the corresponding audio file in the Hugging Face dataset. The audio filenames correspond directly to these unique identifiers, allowing for precise retrieval of the audio source for any given score or critique.
+
 
 # VocalVerse1: Singing Evaluation Model based on QwenAudio
 
@@ -304,6 +315,17 @@ VocalVerse_Datasets-human_labels文件夹包含三个核心文件，提供了针
     * **气息 (Breath Control)：** 对复杂句子的支撑力和稳定性。
     * **情感 (Emotional Expression)：** 演唱的感染力与共鸣感。
     * **技巧 (Vocal Technique)：** 演唱技巧的熟练度。
+
+### 🎵 音频数据下载与映射说明
+
+受限于 GitHub 仓库的文件体积限制，完整的原始音频文件已托管至 Hugging Face 数据集仓库。
+
+* **数据集下载地址**: [https://huggingface.co/datasets/karl-wang/VocalVerse-dataset/](https://huggingface.co/datasets/karl-wang/VocalVerse-dataset/)
+
+**音频与分数映射方法：**
+为了使用本数据集，您需要通过 ID 将音频文件与 Excel 表格（位于 `VocalVerse_Datasets-human_labels` 文件夹）中的评分信息对应起来：
+1.  **获取 ID**：请查看 Excel 表格中的 **`Song ID`** 和 **`Record ID`** 列。
+2.  **查找音频**：根据这两个 ID 在 Hugging Face 数据集中查找对应的音频文件。文件名与这些唯一标识符直接对应，确保您能准确找到每条评分或评语所对应的原始录音。
 
 # VocalVerse1: 基于qwenaudio的歌唱评价模型
 
