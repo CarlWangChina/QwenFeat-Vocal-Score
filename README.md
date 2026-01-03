@@ -221,6 +221,9 @@ Adversarial Training (Decoupling with SaMoye spk encoder):
 
 <img width="785" height="858" alt="32e73d7a89338a602f350225e859b67f" src="https://github.com/user-attachments/assets/26b3f4f9-2595-4567-934d-10d089785464" />
 
+## 
+![VocalVerse_System_Output_Example-Singing_Performance_Evaluation](VocalVerse_System_Output_Example-Singing_Performance_Evaluation.png)
+
 # VocalVerse项目总览
 
 本工作郑重感谢 QwenAudio, SongEval, MuQ等先前工作的支持.
