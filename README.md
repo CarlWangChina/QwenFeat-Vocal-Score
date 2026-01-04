@@ -1,5 +1,10 @@
 # VocalVerse Project Overview
 
+[![arXiv](https://img.shields.io/badge/arXiv-2512.07005-b31b1b.svg)](https://www.arxiv.org/abs/2512.06999) 
+[![ACM DL](https://img.shields.io/badge/ACM%20DL-10.1145%2F3746027.3758210-blue)](https://doi.org/10.1145/3746027.3758148)
+
+---
+
 This work sincerely acknowledges the support of previous works such as QwenAudio, SongEval, and MuQ.
 
 **All project resources, including source code, model weights, and human-annotated datasets, are now fully open-sourced.**
