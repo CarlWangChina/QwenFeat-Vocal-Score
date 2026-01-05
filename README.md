@@ -74,17 +74,20 @@ If model loading hangs, try using a Hugging Face mirror:
 - Test scripts are available at `/home/w-4090/projects/qwenaudio/tests/test_processor_v2.py` and `/home/w-4090/projects/qwenaudio/tests/test_processor_v3.py`.
 - For the code in Figures 1 and 2: when loading models locally, change the model paths in `model.py` and `processor.py` to your local paths.
 
-<img width="1601" height="315" alt="77b6f8227c1d4af030fd7e2e0af8c8ab" src="https://github.com/user-attachments/assets/191e8e3f-2b67-43c0-b51e-f0b50f5d7dd6" />
-<img width="1335" height="165" alt="76943b4c05d12bf090aecc602c8430b4" src="https://github.com/user-attachments/assets/8b058f65-de12-44c6-b041-e7db5ef97095" />
+<img width="640" height="126" alt="77b6f8227c1d4af030fd7e2e0af8c8ab" src="https://github.com/user-attachments/assets/191e8e3f-2b67-43c0-b51e-f0b50f5d7dd6" /> 
+<img width="534" height="66" alt="76943b4c05d12bf090aecc602c8430b4" src="https://github.com/user-attachments/assets/8b058f65-de12-44c6-b041-e7db5ef97095" />
 
 - Figure 3 shows the two trained Lora models. These are ready and should be uploaded.
-<img width="418" height="56" alt="image" src="https://github.com/user-attachments/assets/e07494e7-eedc-44bc-b885-bf825de3d3dc" />
+<img width="209" height="28" alt="image" src="https://github.com/user-attachments/assets/e07494e7-eedc-44bc-b885-bf825de3d3dc" />
 
 - The entire project including code and Lora weights is included, but the base model must be downloaded from the internet.
 - If only the final classifier is active and the Lora on the model body is not, accuracy will be very low. Once Lora weights are active, accuracy reaches 80%-90%. (Encoder + LLM Decode + Lora + Classifier).
 - Figure 4 shows that the `Qwen2-Audio-7B-Instruct/` base model is required. It was previously downloaded automatically to `.cache`; if downloaded manually, re-specify the path in the code.
 
-<img width="785" height="858" alt="32e73d7a89338a602f350225e859b67f" src="https://github.com/user-attachments/assets/26b3f4f9-2595-4567-934d-10d089785464" />
+<img width="314" height="343" alt="32e73d7a89338a602f350225e859b67f" src="https://github.com/user-attachments/assets/26b3f4f9-2595-4567-934d-10d089785464" />
+
+## VocalVerse output
+<img src="VocalVerse_System_Output_Example-Singing_Performance_Evaluation.png" alt="VocalVerse_System_Output_Example-Singing_Performance_Evaluation" width="50%" />
 
 # VocalVerse2: Vocal Recording Scoring Model based on MuQ
 
@@ -310,11 +313,11 @@ conda环境用qwenaudio, 两个模型权重都复制进去了
 
 附图1和2的代码, 加载本地模型把model.py和processor.py中的模型路径改成本地的就行了
 
-<img width="1601" height="315" alt="77b6f8227c1d4af030fd7e2e0af8c8ab" src="https://github.com/user-attachments/assets/191e8e3f-2b67-43c0-b51e-f0b50f5d7dd6" />
-<img width="1335" height="165" alt="76943b4c05d12bf090aecc602c8430b4" src="https://github.com/user-attachments/assets/8b058f65-de12-44c6-b041-e7db5ef97095" />
+<img width="640" height="126" alt="77b6f8227c1d4af030fd7e2e0af8c8ab" src="https://github.com/user-attachments/assets/191e8e3f-2b67-43c0-b51e-f0b50f5d7dd6" /> 
+<img width="534" height="66" alt="76943b4c05d12bf090aecc602c8430b4" src="https://github.com/user-attachments/assets/8b058f65-de12-44c6-b041-e7db5ef97095" />
 
 附图3中两个是训练的lora模型. 这个是训好的. 这两个要上传
-<img width="418" height="56" alt="image" src="https://github.com/user-attachments/assets/e07494e7-eedc-44bc-b885-bf825de3d3dc" />
+<img width="209" height="28" alt="image" src="https://github.com/user-attachments/assets/e07494e7-eedc-44bc-b885-bf825de3d3dc" />
 
 整个工程包括代码和lora权重都在里面，但是base模型需要联网下载
 
@@ -322,10 +325,10 @@ conda环境用qwenaudio, 两个模型权重都复制进去了
 
 附图4 中Qwen2-Audio-7B-Instruct/这个base 模型都要，之前是自动下载到.cache里面的，单独下载的应该要代码里面重新指定路径
 
-<img width="785" height="858" alt="32e73d7a89338a602f350225e859b67f" src="https://github.com/user-attachments/assets/26b3f4f9-2595-4567-934d-10d089785464" />
+<img width="314" height="343" alt="32e73d7a89338a602f350225e859b67f" src="https://github.com/user-attachments/assets/26b3f4f9-2595-4567-934d-10d089785464" />
 
 ## VocalVerse系统输出案例
-![VocalVerse_System_Output_Example-Singing_Performance_Evaluation](VocalVerse_System_Output_Example-Singing_Performance_Evaluation.png)
+<img src="VocalVerse_System_Output_Example-Singing_Performance_Evaluation.png" alt="VocalVerse_System_Output_Example-Singing_Performance_Evaluation" width="50%" />
 
 # VocalVerse2: 基于MuQ的人声录音打分模型 
 
