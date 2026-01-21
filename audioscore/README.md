@@ -82,7 +82,20 @@ python tests/test_generate_score.py
 * 当时是因为绝对分数的数据数量不够，所以使用了排序模型。
 * **关于 `scripts/train/train_grl.py**`：虽然支持标量分数带对抗解耦，但其 MuQ 未参与训练且输出为五分类（需改造成 songeval 那样的连续数据），且与当前排序模型结构不同，故不在此任务中使用。
 
+### **模型保存说明**
 
+在 `src/audioscore/model.py` 第 **1787** 行附近，如果硬盘空间充足，建议改为保存完整的模型权重，以防止某些情况下数据保存不全。
+
+**修改方案如下：**
+
+```python
+# 只保存 LoRA 权重 (非常小)
+# lora_sd = get_lora_state_dict(self.muq)
+# torch.save(lora_sd, os.path.join(path, "muq_lora.pt"))
+
+# 替换为保存完整的模型 state_dict
+torch.save(self.muq.state_dict(), os.path.join(path, "muq_lora.pt"))
+```
 
 ## 3. 详细操作步骤
 
