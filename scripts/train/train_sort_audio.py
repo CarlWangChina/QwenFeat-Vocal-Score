@@ -48,7 +48,7 @@ if __name__ == "__main__":
         # spk_encoder=spk_encoder, # 对抗训练的模型（可选）
         spk_encoder=None,
         train_json="dataset/train_4176_90.json",
-        val_json="val_4176_10.json",
+        val_json="dataset/val_4176_10.json",
         device=device,
         local_rank=rank,
         world_size=world_size,
