@@ -1,0 +1,28 @@
+*.pyc
+*.pyo
+*.pyd
+*.pyi
+*.log
+*.out
+__pycache__/*
+
+
+ckpts/*
+
+qwenaudio/data/cutted_score_audio/*
+qwenaudio/audio_model_checkpoints/*
+qwenaudio/data/audio_sep_seg/*
+qwenaudio/data/score/*
+qwenaudio/data/dataset/*
+# qwenaudio/ckpts/*
+qwenaudio/data/*
+qwenaudio/outputs/*
+
+audioscore/.vscode/*
+# audioscore/ckpts/*
+audioscore/pretrain/*
+audioscore/data/**/*.wav
+audioscore/data/**/*.m4a
+audioscore/data/**/*.pt
+audioscore/data/**/*.xlsx
+audioscore/results/
