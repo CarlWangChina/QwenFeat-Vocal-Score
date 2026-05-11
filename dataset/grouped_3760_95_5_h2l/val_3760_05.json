@@ -1,0 +1,902 @@
+[
+  [
+    {
+      "audio_id": 460994,
+      "score": 97.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/460994.m4a"
+    },
+    {
+      "audio_id": 462818,
+      "score": 95.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/462818.m4a"
+    },
+    {
+      "audio_id": 458794,
+      "score": 94.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/458794.m4a"
+    },
+    {
+      "audio_id": 673768,
+      "score": 93.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/673768.m4a"
+    },
+    {
+      "audio_id": 452615,
+      "score": 92.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/452615.m4a"
+    },
+    {
+      "audio_id": 465157,
+      "score": 91.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/465157.m4a"
+    },
+    {
+      "audio_id": 440683626,
+      "score": 90.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/440683626.m4a"
+    },
+    {
+      "audio_id": 683753,
+      "score": 90.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/683753.m4a"
+    },
+    {
+      "audio_id": 685787,
+      "score": 89.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/685787.m4a"
+    },
+    {
+      "audio_id": 459024,
+      "score": 88.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/459024.m4a"
+    },
+    {
+      "audio_id": 685707,
+      "score": 87.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/685707.m4a"
+    },
+    {
+      "audio_id": 722493,
+      "score": 86.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/722493.m4a"
+    },
+    {
+      "audio_id": 446111,
+      "score": 85.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/446111.m4a"
+    },
+    {
+      "audio_id": 446344,
+      "score": 83.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/446344.m4a"
+    },
+    {
+      "audio_id": 416138936,
+      "score": 81.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/416138936.m4a"
+    },
+    {
+      "audio_id": 443773999,
+      "score": 79.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/443773999.m4a"
+    },
+    {
+      "audio_id": 429654209,
+      "score": 77.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/429654209.m4a"
+    },
+    {
+      "audio_id": 444164149,
+      "score": 75.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/444164149.m4a"
+    },
+    {
+      "audio_id": 440039007,
+      "score": 74.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/440039007.m4a"
+    },
+    {
+      "audio_id": 421299874,
+      "score": 72.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/421299874.m4a"
+    },
+    {
+      "audio_id": 424889977,
+      "score": 71.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/424889977.m4a"
+    },
+    {
+      "audio_id": 433086463,
+      "score": 69.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/433086463.m4a"
+    },
+    {
+      "audio_id": 418700276,
+      "score": 68.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/418700276.m4a"
+    },
+    {
+      "audio_id": 422143829,
+      "score": 66.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/422143829.m4a"
+    },
+    {
+      "audio_id": 438975256,
+      "score": 65.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/438975256.m4a"
+    },
+    {
+      "audio_id": 435893576,
+      "score": 63.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/435893576.m4a"
+    },
+    {
+      "audio_id": 424435636,
+      "score": 62.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/424435636.m4a"
+    },
+    {
+      "audio_id": 424606360,
+      "score": 61.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/424606360.m4a"
+    },
+    {
+      "audio_id": 440033417,
+      "score": 59.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/440033417.m4a"
+    },
+    {
+      "audio_id": 423624000,
+      "score": 58.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/423624000.m4a"
+    },
+    {
+      "audio_id": 419699517,
+      "score": 56.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/419699517.m4a"
+    },
+    {
+      "audio_id": 423505692,
+      "score": 54.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/423505692.m4a"
+    },
+    {
+      "audio_id": 422325922,
+      "score": 53.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/422325922.m4a"
+    },
+    {
+      "audio_id": 444069359,
+      "score": 51.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/444069359.m4a"
+    },
+    {
+      "audio_id": 432916775,
+      "score": 48.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/432916775.m4a"
+    }
+  ],
+  [
+    {
+      "audio_id": 673565,
+      "score": 97.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/673565.m4a"
+    },
+    {
+      "audio_id": 685927,
+      "score": 95.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/685927.m4a"
+    },
+    {
+      "audio_id": 714219,
+      "score": 94.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/714219.m4a"
+    },
+    {
+      "audio_id": 684003,
+      "score": 93.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/684003.m4a"
+    },
+    {
+      "audio_id": 478405,
+      "score": 92.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/478405.m4a"
+    },
+    {
+      "audio_id": 470048,
+      "score": 92.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/470048.m4a"
+    },
+    {
+      "audio_id": 704539,
+      "score": 91.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/704539.m4a"
+    },
+    {
+      "audio_id": 683105,
+      "score": 90.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/683105.m4a"
+    },
+    {
+      "audio_id": 445669,
+      "score": 89.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/445669.m4a"
+    },
+    {
+      "audio_id": 673581,
+      "score": 88.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/673581.m4a"
+    },
+    {
+      "audio_id": 420220973,
+      "score": 87.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/420220973.m4a"
+    },
+    {
+      "audio_id": 689834,
+      "score": 86.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/689834.m4a"
+    },
+    {
+      "audio_id": 721813,
+      "score": 85.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/721813.m4a"
+    },
+    {
+      "audio_id": 723457,
+      "score": 83.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/723457.m4a"
+    },
+    {
+      "audio_id": 460796,
+      "score": 81.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/460796.m4a"
+    },
+    {
+      "audio_id": 439179567,
+      "score": 79.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/439179567.m4a"
+    },
+    {
+      "audio_id": 444051340,
+      "score": 77.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/444051340.m4a"
+    },
+    {
+      "audio_id": 419782684,
+      "score": 76.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/419782684.m4a"
+    },
+    {
+      "audio_id": 445496316,
+      "score": 74.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/445496316.m4a"
+    },
+    {
+      "audio_id": 415207724,
+      "score": 73.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/415207724.m4a"
+    },
+    {
+      "audio_id": 420422835,
+      "score": 71.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/420422835.m4a"
+    },
+    {
+      "audio_id": 429014733,
+      "score": 70.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/429014733.m4a"
+    },
+    {
+      "audio_id": 437012808,
+      "score": 68.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/437012808.m4a"
+    },
+    {
+      "audio_id": 422033039,
+      "score": 67.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/422033039.m4a"
+    },
+    {
+      "audio_id": 424203916,
+      "score": 65.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/424203916.m4a"
+    },
+    {
+      "audio_id": 419377148,
+      "score": 64.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/419377148.m4a"
+    },
+    {
+      "audio_id": 441673548,
+      "score": 62.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/441673548.m4a"
+    },
+    {
+      "audio_id": 443796142,
+      "score": 61.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/443796142.m4a"
+    },
+    {
+      "audio_id": 440477840,
+      "score": 59.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/440477840.m4a"
+    },
+    {
+      "audio_id": 420489097,
+      "score": 58.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/420489097.m4a"
+    },
+    {
+      "audio_id": 423255710,
+      "score": 56.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/423255710.m4a"
+    },
+    {
+      "audio_id": 420254411,
+      "score": 55.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/420254411.m4a"
+    },
+    {
+      "audio_id": 413904774,
+      "score": 53.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/413904774.m4a"
+    },
+    {
+      "audio_id": 444477790,
+      "score": 51.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/444477790.m4a"
+    },
+    {
+      "audio_id": 444509975,
+      "score": 49.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/444509975.m4a"
+    },
+    {
+      "audio_id": 427732108,
+      "score": 30.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/427732108.m4a"
+    }
+  ],
+  [
+    {
+      "audio_id": 688463,
+      "score": 98.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/688463.m4a"
+    },
+    {
+      "audio_id": 686117,
+      "score": 96.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/686117.m4a"
+    },
+    {
+      "audio_id": 457945,
+      "score": 94.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/457945.m4a"
+    },
+    {
+      "audio_id": 460444,
+      "score": 93.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/460444.m4a"
+    },
+    {
+      "audio_id": 414875831,
+      "score": 92.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/414875831.m4a"
+    },
+    {
+      "audio_id": 464095,
+      "score": 92.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/464095.m4a"
+    },
+    {
+      "audio_id": 687487,
+      "score": 91.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/687487.m4a"
+    },
+    {
+      "audio_id": 456762,
+      "score": 90.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/456762.m4a"
+    },
+    {
+      "audio_id": 461261,
+      "score": 89.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/461261.m4a"
+    },
+    {
+      "audio_id": 436130378,
+      "score": 88.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/436130378.m4a"
+    },
+    {
+      "audio_id": 463739,
+      "score": 88.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/463739.m4a"
+    },
+    {
+      "audio_id": 448768,
+      "score": 87.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/448768.m4a"
+    },
+    {
+      "audio_id": 703525,
+      "score": 85.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/703525.m4a"
+    },
+    {
+      "audio_id": 688891,
+      "score": 84.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/688891.m4a"
+    },
+    {
+      "audio_id": 437146662,
+      "score": 82.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/437146662.m4a"
+    },
+    {
+      "audio_id": 424885573,
+      "score": 80.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/424885573.m4a"
+    },
+    {
+      "audio_id": 446158689,
+      "score": 78.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/446158689.m4a"
+    },
+    {
+      "audio_id": 422883824,
+      "score": 76.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/422883824.m4a"
+    },
+    {
+      "audio_id": 430373401,
+      "score": 75.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/430373401.m4a"
+    },
+    {
+      "audio_id": 422491658,
+      "score": 73.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/422491658.m4a"
+    },
+    {
+      "audio_id": 427697168,
+      "score": 71.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/427697168.m4a"
+    },
+    {
+      "audio_id": 419536826,
+      "score": 70.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/419536826.m4a"
+    },
+    {
+      "audio_id": 427955130,
+      "score": 68.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/427955130.m4a"
+    },
+    {
+      "audio_id": 413992289,
+      "score": 67.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/413992289.m4a"
+    },
+    {
+      "audio_id": 414300484,
+      "score": 66.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/414300484.m4a"
+    },
+    {
+      "audio_id": 423899930,
+      "score": 64.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/423899930.m4a"
+    },
+    {
+      "audio_id": 438948652,
+      "score": 63.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/438948652.m4a"
+    },
+    {
+      "audio_id": 439170201,
+      "score": 61.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/439170201.m4a"
+    },
+    {
+      "audio_id": 418678826,
+      "score": 60.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/418678826.m4a"
+    },
+    {
+      "audio_id": 440976164,
+      "score": 58.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/440976164.m4a"
+    },
+    {
+      "audio_id": 419279439,
+      "score": 57.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/419279439.m4a"
+    },
+    {
+      "audio_id": 430687136,
+      "score": 55.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/430687136.m4a"
+    },
+    {
+      "audio_id": 416948979,
+      "score": 54.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/416948979.m4a"
+    },
+    {
+      "audio_id": 444220745,
+      "score": 52.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/444220745.m4a"
+    },
+    {
+      "audio_id": 421359278,
+      "score": 50.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/421359278.m4a"
+    },
+    {
+      "audio_id": 413924032,
+      "score": 45.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/413924032.m4a"
+    }
+  ],
+  [
+    {
+      "audio_id": 465755,
+      "score": 98.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/465755.m4a"
+    },
+    {
+      "audio_id": 633494,
+      "score": 96.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/633494.m4a"
+    },
+    {
+      "audio_id": 463096,
+      "score": 94.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/463096.m4a"
+    },
+    {
+      "audio_id": 686345,
+      "score": 93.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/686345.m4a"
+    },
+    {
+      "audio_id": 685885,
+      "score": 93.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/685885.m4a"
+    },
+    {
+      "audio_id": 692930,
+      "score": 92.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/692930.m4a"
+    },
+    {
+      "audio_id": 476212,
+      "score": 91.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/476212.m4a"
+    },
+    {
+      "audio_id": 457206,
+      "score": 90.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/457206.m4a"
+    },
+    {
+      "audio_id": 722607,
+      "score": 90.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/722607.m4a"
+    },
+    {
+      "audio_id": 685853,
+      "score": 89.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/685853.m4a"
+    },
+    {
+      "audio_id": 439210442,
+      "score": 88.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/439210442.m4a"
+    },
+    {
+      "audio_id": 461598,
+      "score": 87.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/461598.m4a"
+    },
+    {
+      "audio_id": 425334596,
+      "score": 85.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/425334596.m4a"
+    },
+    {
+      "audio_id": 462755,
+      "score": 84.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/462755.m4a"
+    },
+    {
+      "audio_id": 415979140,
+      "score": 82.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/415979140.m4a"
+    },
+    {
+      "audio_id": 425311718,
+      "score": 80.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/425311718.m4a"
+    },
+    {
+      "audio_id": 417920126,
+      "score": 78.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/417920126.m4a"
+    },
+    {
+      "audio_id": 436679754,
+      "score": 76.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/436679754.m4a"
+    },
+    {
+      "audio_id": 424934081,
+      "score": 75.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/424934081.m4a"
+    },
+    {
+      "audio_id": 414044306,
+      "score": 73.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/414044306.m4a"
+    },
+    {
+      "audio_id": 414543293,
+      "score": 71.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/414543293.m4a"
+    },
+    {
+      "audio_id": 436984785,
+      "score": 70.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/436984785.m4a"
+    },
+    {
+      "audio_id": 419984771,
+      "score": 69.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/419984771.m4a"
+    },
+    {
+      "audio_id": 421201355,
+      "score": 67.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/421201355.m4a"
+    },
+    {
+      "audio_id": 418867934,
+      "score": 66.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/418867934.m4a"
+    },
+    {
+      "audio_id": 418624305,
+      "score": 64.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/418624305.m4a"
+    },
+    {
+      "audio_id": 421843930,
+      "score": 63.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/421843930.m4a"
+    },
+    {
+      "audio_id": 414921021,
+      "score": 61.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/414921021.m4a"
+    },
+    {
+      "audio_id": 435684671,
+      "score": 60.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/435684671.m4a"
+    },
+    {
+      "audio_id": 419233547,
+      "score": 58.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/419233547.m4a"
+    },
+    {
+      "audio_id": 446158084,
+      "score": 57.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/446158084.m4a"
+    },
+    {
+      "audio_id": 415973761,
+      "score": 55.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/415973761.m4a"
+    },
+    {
+      "audio_id": 440638889,
+      "score": 54.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/440638889.m4a"
+    },
+    {
+      "audio_id": 419641355,
+      "score": 52.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/419641355.m4a"
+    },
+    {
+      "audio_id": 440562111,
+      "score": 50.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/440562111.m4a"
+    },
+    {
+      "audio_id": 429487312,
+      "score": 45.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/429487312.m4a"
+    }
+  ],
+  [
+    {
+      "audio_id": 723958,
+      "score": 96.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/723958.m4a"
+    },
+    {
+      "audio_id": 685998,
+      "score": 95.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/685998.m4a"
+    },
+    {
+      "audio_id": 691186,
+      "score": 94.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/691186.m4a"
+    },
+    {
+      "audio_id": 683977,
+      "score": 93.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/683977.m4a"
+    },
+    {
+      "audio_id": 452126,
+      "score": 92.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/452126.m4a"
+    },
+    {
+      "audio_id": 462799,
+      "score": 91.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/462799.m4a"
+    },
+    {
+      "audio_id": 724380,
+      "score": 90.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/724380.m4a"
+    },
+    {
+      "audio_id": 689334,
+      "score": 90.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/689334.m4a"
+    },
+    {
+      "audio_id": 459054,
+      "score": 89.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/459054.m4a"
+    },
+    {
+      "audio_id": 463999,
+      "score": 88.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/463999.m4a"
+    },
+    {
+      "audio_id": 450167,
+      "score": 87.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/450167.m4a"
+    },
+    {
+      "audio_id": 461591,
+      "score": 86.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/461591.m4a"
+    },
+    {
+      "audio_id": 420457001,
+      "score": 84.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/420457001.m4a"
+    },
+    {
+      "audio_id": 423505417,
+      "score": 82.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/423505417.m4a"
+    },
+    {
+      "audio_id": 455537,
+      "score": 80.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/455537.m4a"
+    },
+    {
+      "audio_id": 585016,
+      "score": 78.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2000_enhanced/585016.m4a"
+    },
+    {
+      "audio_id": 417716289,
+      "score": 76.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/417716289.m4a"
+    },
+    {
+      "audio_id": 425618109,
+      "score": 75.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/425618109.m4a"
+    },
+    {
+      "audio_id": 435629935,
+      "score": 73.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/435629935.m4a"
+    },
+    {
+      "audio_id": 442556817,
+      "score": 72.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/442556817.m4a"
+    },
+    {
+      "audio_id": 436019295,
+      "score": 70.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/436019295.m4a"
+    },
+    {
+      "audio_id": 421841109,
+      "score": 69.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/421841109.m4a"
+    },
+    {
+      "audio_id": 440881416,
+      "score": 67.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/440881416.m4a"
+    },
+    {
+      "audio_id": 438789342,
+      "score": 66.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/438789342.m4a"
+    },
+    {
+      "audio_id": 429258770,
+      "score": 64.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/429258770.m4a"
+    },
+    {
+      "audio_id": 416574966,
+      "score": 63.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/416574966.m4a"
+    },
+    {
+      "audio_id": 436360988,
+      "score": 62.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/436360988.m4a"
+    },
+    {
+      "audio_id": 417844618,
+      "score": 60.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/417844618.m4a"
+    },
+    {
+      "audio_id": 420571470,
+      "score": 59.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/420571470.m4a"
+    },
+    {
+      "audio_id": 432922632,
+      "score": 57.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/432922632.m4a"
+    },
+    {
+      "audio_id": 427981811,
+      "score": 55.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/427981811.m4a"
+    },
+    {
+      "audio_id": 419595404,
+      "score": 54.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/419595404.m4a"
+    },
+    {
+      "audio_id": 444263510,
+      "score": 52.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/444263510.m4a"
+    },
+    {
+      "audio_id": 428240274,
+      "score": 50.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/428240274.m4a"
+    },
+    {
+      "audio_id": 442108146,
+      "score": 47.0,
+      "audio_file": "/cache/cqy_cache/audio-score/2310/442108146.m4a"
+    }
+  ]
+]

@@ -1779,7 +1779,7 @@ class SongEvalGenerator_audio_lora(torch.nn.Module):
         return self.model(audio_feats_vec=audio_embeds, 
                           return_grl=return_grl, grl_alpha=grl_alpha)
 
-    def generate_tag(self, path, inverse=True):
+    def generate_tag(self, path, inverse=False):
         target_sr = 24000
         device = next(self.parameters()).device
         dtypes = {param.dtype for param in self.parameters()} | {buf.dtype for buf in self.buffers()}
@@ -1803,26 +1803,38 @@ class SongEvalGenerator_audio_lora(torch.nn.Module):
         # 保存 Generator 部分
         torch.save(self.model.state_dict(), os.path.join(path, "weights.pt"))
 
-        # 只保存 LoRA 权重 (非常小)
-        lora_sd = get_lora_state_dict(self.muq)
-        torch.save(lora_sd, os.path.join(path, "muq_lora.pt"))
+        # 保存完整 MuQ 权重（包含 LoRA）
+        torch.save(self.muq.state_dict(), os.path.join(path, "muq_lora.pt"))
 
         with open(os.path.join(path, "type.txt"), "w") as f:
             f.write("SongEvalGenerator_audio_lora")
 
-        print(f"✔ Saved small LoRA-only model to {path}")
+        print(f"✔ Saved model with full MuQ weights to {path}")
 
     def load_model(self, path):
         type_path = os.path.join(path, "type.txt")
         if not os.path.exists(type_path):
             raise FileNotFoundError("Missing "+type_path)
 
-        # 加载 LoRA
+        # 加载 MuQ（完整权重或 LoRA-only）
         lora_path = os.path.join(path, "muq_lora.pt")
         if os.path.exists(lora_path):
             lora_sd = torch.load(lora_path, map_location="cpu")
-            load_lora_state_dict(self.muq, lora_sd)
-            print(f"✔ Loaded LoRA from {lora_path}")
+            if isinstance(lora_sd, dict) and lora_sd:
+                keys = list(lora_sd.keys())
+                lora_only = all(
+                    k.endswith(".lora_A") or k.endswith(".lora_B") or k.endswith(".scaling")
+                    for k in keys
+                )
+            else:
+                lora_only = False
+
+            if lora_only:
+                load_lora_state_dict(self.muq, lora_sd)
+                print(f"✔ Loaded LoRA from {lora_path}")
+            else:
+                self.muq.load_state_dict(lora_sd, strict=False)
+                print(f"✔ Loaded full MuQ weights from {lora_path}")
 
         # 加载 Generator
         gen_path = os.path.join(path, "weights.pt")

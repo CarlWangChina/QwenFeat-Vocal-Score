@@ -5,6 +5,7 @@
 *.log
 *.out
 __pycache__/*
-
-
+outputs
 ckpts/*
+tmp
+README_muq_sort_audio_training.md

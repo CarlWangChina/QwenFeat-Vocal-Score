@@ -11,24 +11,26 @@ from torch.utils.data.distributed import DistributedSampler
 from torch.optim import AdamW
 from torch.nn import CrossEntropyLoss, BCELoss, MSELoss
 from torch.optim.lr_scheduler import StepLR, CosineAnnealingLR, CosineAnnealingWarmRestarts
+from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 import numpy as np
 from transformers import AutoProcessor, Qwen2AudioForConditionalGeneration, Qwen2AudioProcessor
 import logging
+import datetime
 import math
 from collections import defaultdict
-from scipy.stats import pearsonr
+from scipy.stats import pearsonr, spearmanr
 
 ROOT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.join(ROOT_PATH, "src"))
 
-from audioscore.dataset import AudioDataset_pairwise_audio
+from audioscore.dataset import AudioDataset_pairwise_audio, ROOT_DIR as DATASET_ROOT_DIR
 import audioscore.audio_cut
 
-def pairwise_loss(score_i, score_j, label, margin=0.2):
-    # label=1表示i应高于j，label=0表示j应高于i
+def pairwise_loss(score_i, score_j, label):
+    # label=1表示i应高于j，label=0表示i应低于j
     diff = score_i - score_j
-    return torch.mean(torch.log(1 + torch.exp(-label * (diff - margin))))
+    return torch.nn.functional.binary_cross_entropy_with_logits(diff, label)
 
 def binary_rank_loss(score_i, score_j, label):
     # label∈{0,1}表示i是否优于j
@@ -57,7 +59,33 @@ def masked_average(tensor, mask):
     return avg_result
 
 class Trainer:
-    def __init__(self, model, spk_encoder, train_json, val_json=None, device=None, local_rank=-1, world_size=-1, data_type="use_audio_feat", save_dir="checkpoints"):
+    def __init__(
+        self,
+        model,
+        spk_encoder,
+        train_json,
+        val_json=None,
+        device=None,
+        local_rank=-1,
+        world_size=-1,
+        data_type="use_audio_feat",
+        save_dir="checkpoints",
+        train_cache_dir=None,
+        train_cache_mode="none",
+        train_cache_base_dir=None,
+        train_cache_target_sr=24000,
+        train_cache_segment_duration=60,
+        train_cache_kind="segment",
+        train_cache_max_duration=None,
+        val_cache_dir=None,
+        val_cache_mode="none",
+        val_cache_base_dir=None,
+        val_cache_target_sr=24000,
+        val_cache_segment_duration=60,
+        val_cache_kind="segment",
+        val_cache_max_duration=None,
+        initial_global_step=0,
+    ):
         """
         音频评分模型训练器（支持多卡训练）
         Args:
@@ -82,20 +110,41 @@ class Trainer:
         
         # self.model.to(self.device)
 
-        self.train_dataset = AudioDataset_pairwise_audio(train_json)
-        self.val_dataset = AudioDataset_pairwise_audio(val_json) if val_json else None
+        self.train_dataset = AudioDataset_pairwise_audio(
+            train_json,
+            cache_dir=train_cache_dir,
+            cache_mode=train_cache_mode,
+            cache_base_dir=train_cache_base_dir,
+            cache_target_sr=train_cache_target_sr,
+            cache_segment_duration=train_cache_segment_duration,
+            cache_kind=train_cache_kind,
+            cache_max_duration=train_cache_max_duration,
+        )
+        self.val_dataset = AudioDataset_pairwise_audio(
+            val_json,
+            cache_dir=val_cache_dir,
+            cache_mode=val_cache_mode,
+            cache_base_dir=val_cache_base_dir,
+            cache_target_sr=val_cache_target_sr,
+            cache_segment_duration=val_cache_segment_duration,
+            cache_kind=val_cache_kind,
+            cache_max_duration=val_cache_max_duration,
+        ) if val_json else None
         
         # 训练参数默认值
         self.batch_size = 8
         self.lr = 1e-4
         self.epochs = 10
         self.save_dir = save_dir
-        self.eval_steps = 2000  # 每500步验证一次
-        self.log_steps = 500    # 每50步记录一次日志
+        self.eval_steps = 500  # 每500步验证一次
+        self.log_steps = 50    # 每50步记录一次日志
         
         self.criterion = CrossEntropyLoss()
         self.speaker_criterion = MSELoss()
         self.metric_name = "Accuracy"
+        self.tb_writer = None
+        self.run_id = None
+        self.initial_global_step = max(0, int(initial_global_step))
 
         if self.local_rank in [-1, 0]:
             logger = logging.getLogger(__name__)
@@ -103,7 +152,8 @@ class Trainer:
             
             # 创建文件处理器（FileHandler）
             os.makedirs(self.save_dir, exist_ok=True)
-            file_handler = logging.FileHandler(f'{self.save_dir}/train.log', mode='a', encoding='utf-8')
+            self.run_id = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            file_handler = logging.FileHandler(f'{self.save_dir}/train_{self.run_id}.log', mode='a', encoding='utf-8')
             file_handler.setLevel(logging.DEBUG)  # 处理器级别
             
             # 创建格式化器（Formatter）
@@ -118,6 +168,7 @@ class Trainer:
 
             self.logger = logger
             self.logger.info("start")
+            self.tb_writer = SummaryWriter(log_dir=os.path.join(self.save_dir, "tb", self.run_id))
     
     def create_dataloaders(self):
         """创建训练和验证数据加载器（支持分布式采样器）"""
@@ -195,7 +246,7 @@ class Trainer:
         # 添加StepLR学习率调度器
         scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=10, T_mult=2)
         
-        best_val_accuracy = float('0')
+        best_val_pearson = float('-inf')
         os.makedirs(self.save_dir, exist_ok=True)
         if self.local_rank in [-1, 0]:
             print(self.model)
@@ -204,20 +255,35 @@ class Trainer:
             # 记录初始学习率
             current_lr = optimizer.param_groups[0]['lr']
             self.logger.info(f"Initial learning rate: {current_lr}")
+            if self.initial_global_step > 0:
+                self.logger.info(f"Resume global step from: {self.initial_global_step}")
 
         dist.barrier()
                     
         # 只在主进程进行验证
         if self.InitialValidation:
+            metric_step = self.initial_global_step
             if val_loader and self.local_rank in [-1, 0]:
-                val_avg_loss, val_accuracy = self.evaluate(val_loader)
+                val_avg_loss, val_accuracy, val_pearson, val_spearman = self.evaluate(val_loader)
                 
                 # 记录验证结果
-                self.logger.info(f"Initial: Validation loss: {val_avg_loss:.4f} accuracy: {val_accuracy:.4f}")
+                self.logger.info(
+                    f"Initial: Validation loss: {val_avg_loss:.4f} accuracy: {val_accuracy:.4f} "
+                    f"pearson: {val_pearson:.4f} spearman: {val_spearman:.4f}"
+                )
+                if self.tb_writer:
+                    self.tb_writer.add_scalar("val/loss", val_avg_loss, metric_step)
+                    self.tb_writer.add_scalar("val/acc", val_accuracy, metric_step)
+                    self.tb_writer.add_scalar("val/pearson", val_pearson, metric_step)
+                    self.tb_writer.add_scalar("val/spearman", val_spearman, metric_step)
+                if val_pearson > best_val_pearson:
+                    best_val_pearson = val_pearson
+                if self.tb_writer:
+                    self.tb_writer.add_scalar("val/best_pearson", best_val_pearson, metric_step)
         
         dist.barrier()
 
-        global_step = 0
+        global_step = self.initial_global_step
         for epoch in range(self.epochs):
             # self.evaluate(val_loader)
             
@@ -236,8 +302,13 @@ class Trainer:
                 progress_bar = train_loader
             
             for step, batch in enumerate(progress_bar):
-                
-                local_loss = self.train_step(batch, optimizer, epoch)
+                compute_grad_norm = (
+                    self.local_rank in [-1, 0]
+                    and ((global_step + 1) % self.log_steps == 0)
+                )
+                local_loss, grad_norm = self.train_step(
+                    batch, optimizer, epoch, compute_grad_norm=compute_grad_norm
+                )
                 total_loss += local_loss
                 epoch_loss += local_loss
                 global_step += 1
@@ -256,6 +327,13 @@ class Trainer:
                             "step": f"{global_step}",
                             "lr": f"{current_lr:.2e}"
                         })
+                    if self.tb_writer:
+                        self.tb_writer.add_scalar("train/loss", avg_loss, global_step)
+                        self.tb_writer.add_scalar("lr", current_lr, global_step)
+                        if self.model.module.use_grl:
+                            self.tb_writer.add_scalar("grl_gm", self.grl_gm, global_step)
+                        if grad_norm is not None:
+                            self.tb_writer.add_scalar("train/grad_norm", grad_norm, global_step)
                     total_loss = 0.0  # 重置
 
                 # 验证阶段和学习率调整
@@ -265,16 +343,26 @@ class Trainer:
                     
                     # 只在主进程进行验证
                     if val_loader and self.local_rank in [-1, 0]:
-                        val_avg_loss, val_accuracy = self.evaluate(val_loader)
+                        val_avg_loss, val_accuracy, val_pearson, val_spearman = self.evaluate(val_loader)
                         
                         # 记录验证结果
-                        self.logger.info(f"Step {global_step}: Validation loss: {val_avg_loss:.4f} accuracy: {val_accuracy:.4f}")
+                        self.logger.info(
+                            f"Step {global_step}: Validation loss: {val_avg_loss:.4f} accuracy: {val_accuracy:.4f} "
+                            f"pearson: {val_pearson:.4f} spearman: {val_spearman:.4f}"
+                        )
+                        if self.tb_writer:
+                            self.tb_writer.add_scalar("val/loss", val_avg_loss, global_step)
+                            self.tb_writer.add_scalar("val/acc", val_accuracy, global_step)
+                            self.tb_writer.add_scalar("val/pearson", val_pearson, global_step)
+                            self.tb_writer.add_scalar("val/spearman", val_spearman, global_step)
                         
                         # 保存最佳模型
-                        if val_accuracy > best_val_accuracy:
-                            best_val_accuracy = val_accuracy
+                        if val_pearson > best_val_pearson:
+                            best_val_pearson = val_pearson
                             self.save_model(f"best_model_step_{global_step}")
                             self.logger.info(f"Best model saved to {self.save_dir}/best_model_step_{global_step}")
+                        if self.tb_writer:
+                            self.tb_writer.add_scalar("val/best_pearson", best_val_pearson, global_step)
                     
                     # 所有进程都调整学习率，确保同步
                     old_lr = optimizer.param_groups[0]['lr']
@@ -300,20 +388,33 @@ class Trainer:
             if self.local_rank in [-1, 0]:
                 current_lr = optimizer.param_groups[0]['lr']
                 self.logger.info(f"Epoch {epoch+1} Average training loss: {avg_epoch_loss:.4f}, Learning rate: {current_lr:.2e}")
+                if self.tb_writer:
+                    self.tb_writer.add_scalar("train/epoch_loss", avg_epoch_loss, epoch + 1)
+                    self.tb_writer.add_scalar("lr", current_lr, global_step)
 
             # 每个epoch结束时也进行验证和学习率调整
             dist.barrier()
             
             # 只在主进程进行验证
             if val_loader and self.local_rank in [-1, 0]:
-                val_avg_loss, val_accuracy = self.evaluate(val_loader)
-                self.logger.info(f"Epoch {epoch+1} Validation loss: {val_avg_loss:.4f} accuracy: {val_accuracy:.4f}")
+                val_avg_loss, val_accuracy, val_pearson, val_spearman = self.evaluate(val_loader)
+                self.logger.info(
+                    f"Epoch {epoch+1} Validation loss: {val_avg_loss:.4f} accuracy: {val_accuracy:.4f} "
+                    f"pearson: {val_pearson:.4f} spearman: {val_spearman:.4f}"
+                )
+                if self.tb_writer:
+                    self.tb_writer.add_scalar("val/loss", val_avg_loss, global_step)
+                    self.tb_writer.add_scalar("val/acc", val_accuracy, global_step)
+                    self.tb_writer.add_scalar("val/pearson", val_pearson, global_step)
+                    self.tb_writer.add_scalar("val/spearman", val_spearman, global_step)
                 
                 # 保存最佳模型（基于epoch）
-                if val_accuracy > best_val_accuracy:
-                    best_val_accuracy = val_accuracy
+                if val_pearson > best_val_pearson:
+                    best_val_pearson = val_pearson
                     self.save_model(f"best_model_epoch_{epoch+1}")
                     self.logger.info(f"Best model saved to {self.save_dir}/best_model_epoch_{epoch+1}")
+                if self.tb_writer:
+                    self.tb_writer.add_scalar("val/best_pearson", best_val_pearson, global_step)
             
             # 所有进程都调整学习率，确保同步
             old_lr = optimizer.param_groups[0]['lr']
@@ -325,11 +426,13 @@ class Trainer:
                 self.logger.info(f"Epoch {epoch+1}: Learning rate updated: {old_lr:.2e} -> {new_lr:.2e}")
             
             # 定期保存模型（只在主进程）
-            if (epoch + 1) % 8 == 0 and self.local_rank in [-1, 0]:
+            if (epoch + 1) % 4 == 0 and self.local_rank in [-1, 0]:
                 self.save_model(f"model_epoch_{epoch+1}")
                 self.logger.info(f"Model saved to {self.save_dir}/model_epoch_{epoch+1}")
+        if self.tb_writer:
+            self.tb_writer.close()
     
-    def train_step(self, batch, optimizer, epoch):
+    def train_step(self, batch, optimizer, epoch, compute_grad_norm=False):
         self.model.train()
         optimizer.zero_grad()
 
@@ -352,7 +455,7 @@ class Trainer:
             
             # print(speaker_pred_0.shape, speaker_pred_1.shape, outputs_grl_0.shape, outputs_grl_1.shape)
 
-            main_loss = pairwise_loss(outputs_b, outputs_a, batch["labels"].to(self.device).float())
+            main_loss = pairwise_loss(outputs_a, outputs_b, batch["labels"].to(self.device).float())
             speaker_loss = self.speaker_criterion(speaker_pred_0, outputs_grl_0) + \
                             self.speaker_criterion(speaker_pred_1, outputs_grl_1)
             loss = main_loss -  speaker_loss * self.grl_gm
@@ -365,19 +468,37 @@ class Trainer:
             )
 
             # loss = binary_rank_loss(outputs_a, outputs_b, batch["labels"].to(self.device).float())
-            loss = pairwise_loss(outputs_b, outputs_a, batch["labels"].to(self.device).float())
+            loss = pairwise_loss(outputs_a, outputs_b, batch["labels"].to(self.device).float())
 
         # print("batch", batch)
         # print("outputs_a,outputs_b,loss:", outputs_a,outputs_b, outputs_a-outputs_b,batch["labels"],loss)
 
         loss.backward()
+        grad_norm = None
+        if compute_grad_norm:
+            grad_norm = self._compute_grad_norm()
         total_loss = loss.item()
         optimizer.step()
         
-        return total_loss
+        return total_loss, grad_norm
+
+    def _compute_grad_norm(self):
+        total_norm = 0.0
+        for param in self.model.parameters():
+            if param.grad is None:
+                continue
+            param_norm = param.grad.detach().data.norm(2)
+            total_norm += param_norm.item() ** 2
+        return total_norm ** 0.5
 
     def evaluate(self, val_loader):
         """验证函数"""
+        if val_loader is None:
+            return 0.0, 0.0, 0.0, 0.0
+
+        if isinstance(val_loader.dataset, AudioDataset_pairwise_audio):
+            return self.evaluate_grouped(val_loader.dataset)
+
         self.model.eval()
         total_loss = 0.0
         total_correct = 0
@@ -402,13 +523,13 @@ class Trainer:
                 
                 # 计算损失
                 # loss = binary_rank_loss(outputs_a, outputs_b, batch["labels"].to(self.device).float())
-                loss = pairwise_loss(outputs_b, outputs_a, batch["labels"].to(self.device).float())
+                loss = pairwise_loss(outputs_a, outputs_b, batch["labels"].to(self.device).float())
                 progress_bar.set_postfix(loss=loss.item())
                 total_loss += loss.item()
                 
                 # 计算准确率
-                # 预测：如果outputs_a < outputs_b，则预测为1，否则为0
-                preds = (outputs_a < outputs_b).float()
+                # 预测：如果outputs_a > outputs_b，则预测为1，否则为0
+                preds = (outputs_a > outputs_b).float()
                 labels = batch["labels"].to(self.device).float()
                 
                 correct = (preds == labels).sum().item()
@@ -418,7 +539,76 @@ class Trainer:
         avg_loss = total_loss / len(val_loader)
         accuracy = total_correct / total_samples if total_samples > 0 else 0.0
         
-        return avg_loss, accuracy
+        return avg_loss, accuracy, 0.0, 0.0
+
+    def evaluate_grouped(self, dataset):
+        """验证函数（全局 Pearson/Spearman，保留 pairwise acc/loss）"""
+        self.model.eval()
+        total_loss = 0.0
+        total_correct = 0
+        total_pairs = 0
+        all_true = []
+        all_pred = []
+
+        with torch.no_grad():
+            for group in tqdm(dataset.target, desc="Evaluating groups"):
+                items = []
+                for item in group:
+                    audio_file = item["audio_file"]
+                    if dataset.file_exist(audio_file):
+                        items.append(item)
+
+                if len(items) < 2:
+                    continue
+
+                preds = []
+                trues = []
+                for item in items:
+                    audio_path = os.path.join(DATASET_ROOT_DIR, item["audio_file"])
+                    wav = dataset.load_audio_with_cache(audio_path).to(self.device)
+                    score = self.model(wavs=wav).detach().float().cpu().view(-1)[0]
+                    preds.append(score)
+                    trues.append(float(item["score"]))
+
+                for score in preds:
+                    all_pred.append(score.item())
+                all_true.extend(trues)
+
+                scores_tensor = torch.stack(preds).view(-1)
+                n = scores_tensor.numel()
+                if n < 2:
+                    continue
+
+                diff = scores_tensor[:, None] - scores_tensor[None, :]
+                true_scores = torch.tensor(trues, dtype=diff.dtype)
+                true_diff = true_scores[:, None] - true_scores[None, :]
+
+                base_mask = ~torch.eye(n, dtype=torch.bool)
+                valid_mask = base_mask & (true_diff != 0)
+                if not valid_mask.any():
+                    continue
+
+                label = (true_diff > 0).to(diff.dtype)
+                total_loss += torch.nn.functional.binary_cross_entropy_with_logits(
+                    diff[valid_mask], label[valid_mask], reduction="sum"
+                ).item()
+
+                preds_matrix = diff > 0
+                correct = (preds_matrix == label.bool())[valid_mask].sum().item()
+                total_correct += correct
+                total_pairs += int(valid_mask.sum().item())
+
+        avg_loss = total_loss / total_pairs if total_pairs > 0 else 0.0
+        accuracy = total_correct / total_pairs if total_pairs > 0 else 0.0
+
+        pearson = 0.0
+        spearman = 0.0
+        if len(all_true) > 1:
+            if np.std(all_true) > 0 and np.std(all_pred) > 0:
+                pearson = float(pearsonr(all_true, all_pred)[0])
+                spearman = float(spearmanr(all_true, all_pred)[0])
+
+        return avg_loss, accuracy, pearson, spearman
     
     def save_model(self, filename):
         """保存模型和处理器（只在主进程调用）"""

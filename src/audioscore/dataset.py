@@ -1,4 +1,5 @@
 import os
+import hashlib
 import torch
 import json
 import pickle as pickle
@@ -185,13 +186,13 @@ class AudioDataset_pairwise(Dataset):
             # random.shuffle(ordered_pairs)  # 随机打乱顺序
             # print(ordered_pairs)
             
-            # 生成标签：1表示(i,j)顺序，0表示(j,i)顺序
+            # 生成标签：1表示i分数高于j，0表示i分数低于j
             for i, j in ordered_pairs:
-
-                if group[i]["score"]==group[j]["score"]:
+                score_i = float(group[i]["score"])
+                score_j = float(group[j]["score"])
+                if score_i == score_j:
                     continue
-
-                label = 1 if i < j else 0  # 按索引顺序定义前后关系
+                label = 1 if score_i > score_j else 0
                 self.pairs.append({
                     "group_idx": group_idx,
                     "i": i,
@@ -648,15 +649,16 @@ class AudioDataset_pairwise_hybrid_feature(Dataset):
             # random.shuffle(ordered_pairs)  # 随机打乱顺序
             # print(ordered_pairs)
             
-            # 生成标签：1表示(i,j)顺序，0表示(j,i)顺序
+            # 生成标签：1表示i分数高于j，0表示i分数低于j
             for i, j in ordered_pairs:
-                label = 1 if i < j else 0  # 按索引顺序定义前后关系
+                score_i = float(group[i]["score"])
+                score_j = float(group[j]["score"])
+                if score_i == score_j:
+                    continue
+                label = 1 if score_i > score_j else 0
 
                 hybrid_feature_i = self.get_hybrid_path(group[i]["muq"])
                 hybrid_feature_j = self.get_hybrid_path(group[j]["muq"])
-
-                if group[i]["score"]==group[j]["score"]:
-                    continue
 
                 if os.path.exists(hybrid_feature_i) and os.path.exists(hybrid_feature_j):
                     self.pairs.append({
@@ -700,7 +702,17 @@ class AudioDataset_pairwise_hybrid_feature(Dataset):
         }
     
 class AudioDataset_pairwise_audio(Dataset):
-    def __init__(self, target_file):
+    def __init__(
+        self,
+        target_file,
+        cache_dir=None,
+        cache_mode="none",
+        cache_base_dir=None,
+        cache_target_sr=24000,
+        cache_segment_duration=60,
+        cache_kind="segment",
+        cache_max_duration=None,
+    ):
         
         self.target = dict()
         """
@@ -722,6 +734,13 @@ class AudioDataset_pairwise_audio(Dataset):
         
         # print("loading")
         self.file_exist_cache = {}
+        self.cache_dir = cache_dir
+        self.cache_mode = cache_mode
+        self.cache_base_dir = cache_base_dir or (os.path.dirname(cache_dir) if cache_dir else None)
+        self.cache_target_sr = cache_target_sr
+        self.cache_segment_duration = cache_segment_duration
+        self.cache_kind = cache_kind
+        self.cache_max_duration = cache_max_duration
         
         for group_idx, group in enumerate(self.target):
             n = len(group)
@@ -730,10 +749,13 @@ class AudioDataset_pairwise_audio(Dataset):
             # random.shuffle(ordered_pairs)  # 随机打乱顺序
             # print(ordered_pairs)
             # print(len(ordered_pairs))
-            # 生成标签：1表示(i,j)顺序，0表示(j,i)顺序
+            # 生成标签：1表示i分数高于j，0表示i分数低于j
             for i, j in ordered_pairs:
-                # print(i,j)
-                label = 1 if i < j else 0  # 按索引顺序定义前后关系
+                score_i = float(group[i]["score"])
+                score_j = float(group[j]["score"])
+                if score_i == score_j:
+                    continue
+                label = 1 if score_i > score_j else 0
 
                 audio_i = group[i]["audio_file"]
                 audio_j = group[j]["audio_file"]
@@ -757,6 +779,108 @@ class AudioDataset_pairwise_audio(Dataset):
         return res
 
     @staticmethod
+    def build_cache_path(audio_path, cache_dir, cache_base_dir=None):
+        if not cache_dir:
+            return None
+        rel_path = None
+        if cache_base_dir and os.path.isabs(audio_path):
+            try:
+                if os.path.commonpath([cache_base_dir, audio_path]) == cache_base_dir:
+                    rel_path = os.path.relpath(audio_path, cache_base_dir)
+            except ValueError:
+                rel_path = None
+        if rel_path is None:
+            rel_path = hashlib.sha1(audio_path.encode("utf-8")).hexdigest() + os.path.splitext(audio_path)[1]
+        rel_root = os.path.splitext(rel_path)[0] + ".pt"
+        return os.path.join(cache_dir, rel_root)
+
+    @staticmethod
+    def load_cached_tensor(cache_path):
+        if not cache_path or not os.path.exists(cache_path):
+            return None
+        try:
+            payload = torch.load(cache_path, map_location="cpu")
+        except Exception:
+            return None
+        if isinstance(payload, dict) and "audio" in payload:
+            return payload["audio"]
+        return payload
+
+    @staticmethod
+    def save_cached_tensor(cache_path, audio_tensor, target_sr):
+        if not cache_path:
+            return
+        os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+        tmp_path = f"{cache_path}.tmp"
+        torch.save({"audio": audio_tensor, "sr": target_sr}, tmp_path)
+        os.replace(tmp_path, cache_path)
+
+    def load_audio_with_cache(self, audio_path):
+        cache_path = self.build_cache_path(audio_path, self.cache_dir, self.cache_base_dir)
+        cache_mode = (self.cache_mode or "none").lower()
+        if cache_mode not in {"none", "read", "write", "read_write"}:
+            cache_mode = "none"
+
+        cache_kind = (self.cache_kind or "segment").lower()
+        if cache_kind not in {"segment", "full"}:
+            cache_kind = "segment"
+
+        if cache_mode == "none" or not cache_path:
+            if cache_kind == "full":
+                audio_tensor = AudioDataset_pairwise_audio.load_m4a_full_as_tensor(
+                    audio_path,
+                    target_sr=self.cache_target_sr,
+                    max_duration=self.cache_max_duration,
+                )[0]
+                return AudioDataset_pairwise_audio.random_cut_tensor(
+                    audio_tensor,
+                    self.cache_target_sr,
+                    self.cache_segment_duration,
+                )
+            return AudioDataset_pairwise_audio.load_m4a_as_tensor(
+                audio_path,
+                target_sr=self.cache_target_sr,
+                segment_duration=self.cache_segment_duration,
+            )[0]
+
+        if cache_mode != "write":
+            cached = self.load_cached_tensor(cache_path)
+            if cached is not None:
+                if cache_kind == "full":
+                    return AudioDataset_pairwise_audio.random_cut_tensor(
+                        cached,
+                        self.cache_target_sr,
+                        self.cache_segment_duration,
+                    )
+                return cached
+            if cache_mode == "read":
+                raise FileNotFoundError(f"Missing cached audio: {cache_path}")
+
+        if cache_kind == "full":
+            audio_tensor = AudioDataset_pairwise_audio.load_m4a_full_as_tensor(
+                audio_path,
+                target_sr=self.cache_target_sr,
+                max_duration=self.cache_max_duration,
+            )[0]
+        else:
+            audio_tensor = AudioDataset_pairwise_audio.load_m4a_as_tensor(
+                audio_path,
+                target_sr=self.cache_target_sr,
+                segment_duration=self.cache_segment_duration,
+            )[0]
+
+        if cache_mode in {"write", "read_write"}:
+            self.save_cached_tensor(cache_path, audio_tensor, self.cache_target_sr)
+
+        if cache_kind == "full":
+            return AudioDataset_pairwise_audio.random_cut_tensor(
+                audio_tensor,
+                self.cache_target_sr,
+                self.cache_segment_duration,
+            )
+        return audio_tensor
+
+    @staticmethod
     def _normalize_loudness(audio: torch.Tensor, sr: int) -> torch.Tensor:
         meter = pyln.Meter(sr)
         audio_npd = rearrange(audio, "c n -> n c").numpy()
@@ -765,7 +889,7 @@ class AudioDataset_pairwise_audio(Dataset):
         return rearrange(torch.from_numpy(audio_norm), "n c -> c n").float()
 
     @staticmethod
-    def load_m4a_as_tensor(file_path, target_sr=24000):
+    def load_m4a_as_tensor(file_path, target_sr=24000, segment_duration=60):
         """
         加载M4A音频文件并转换为PyTorch张量
         
@@ -783,7 +907,7 @@ class AudioDataset_pairwise_audio(Dataset):
             warnings.simplefilter("ignore", category=FutureWarning)
             with audioread.audio_open(file_path) as input_file:
                 audio, original_sr = librosa.load(input_file, sr=target_sr, mono=True)
-            audio = audioscore.audio_cut.random_cut_audio(audio, original_sr, 60)[0]
+            audio = audioscore.audio_cut.random_cut_audio(audio, original_sr, segment_duration)[0]
         # 将numpy数组转换为PyTorch张量
         audio_tensor = torch.from_numpy(audio).float()
         
@@ -795,6 +919,52 @@ class AudioDataset_pairwise_audio(Dataset):
 
         return audio_tensor, target_sr
 
+    @staticmethod
+    def load_m4a_full_as_tensor(file_path, target_sr=24000, max_duration=None):
+        """
+        加载M4A音频文件并转换为PyTorch张量（不裁剪）
+
+        参数:
+            file_path: M4A文件路径
+            target_sr: 目标采样率，默认24000Hz
+            max_duration: 限制最大时长（秒），None表示不限制
+
+        返回:
+            audio_tensor: PyTorch张量，形状为(1, samples) - 单声道
+            target_sr: 实际采样率
+        """
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=FutureWarning)
+            with audioread.audio_open(file_path) as input_file:
+                audio, original_sr = librosa.load(input_file, sr=target_sr, mono=True)
+
+        meter = pyln.Meter(original_sr)
+        loudness = meter.integrated_loudness(audio)
+        audio = pyln.normalize.loudness(audio, loudness, -12.0)
+
+        if max_duration:
+            max_samples = int(max_duration * original_sr)
+            if max_samples > 0 and audio.shape[0] > max_samples:
+                audio = audio[:max_samples]
+
+        audio_tensor = torch.from_numpy(audio).float()
+        if audio_tensor.dim() == 1:
+            audio_tensor = audio_tensor.unsqueeze(0)
+
+        return audio_tensor, target_sr
+
+    @staticmethod
+    def random_cut_tensor(audio_tensor, sr, segment_duration):
+        if segment_duration is None:
+            return audio_tensor
+        segment_samples = int(segment_duration * sr)
+        total_samples = audio_tensor.size(-1)
+        if segment_samples <= 0 or total_samples <= segment_samples:
+            return audio_tensor
+        start = random.randint(0, total_samples - segment_samples)
+        end = start + segment_samples
+        return audio_tensor[..., start:end]
+
     def __len__(self):
         return len(self.pairs)
     
@@ -802,8 +972,10 @@ class AudioDataset_pairwise_audio(Dataset):
         pair = self.pairs[idx]
         
         # 加载两个音频的muq特征
-        feature_i = AudioDataset_pairwise_audio.load_m4a_as_tensor(os.path.join(ROOT_DIR, pair["audio_i"]))[0]
-        feature_j = AudioDataset_pairwise_audio.load_m4a_as_tensor(os.path.join(ROOT_DIR, pair["audio_j"]))[0]
+        audio_i_path = os.path.join(ROOT_DIR, pair["audio_i"])
+        audio_j_path = os.path.join(ROOT_DIR, pair["audio_j"])
+        feature_i = self.load_audio_with_cache(audio_i_path)
+        feature_j = self.load_audio_with_cache(audio_j_path)
 
         # print(muq_i.shape, muq_j.shape)
         

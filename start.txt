@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=1 torchrun --nproc_per_node=1 --nnodes=1  scripts/train/train_sort_audio.py
