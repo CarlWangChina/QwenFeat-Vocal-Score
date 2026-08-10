@@ -5,7 +5,7 @@
 
 ---
 
-This work sincerely acknowledges the support of previous works such as **QwenAudio, SongEval, and MuQ**.
+This work sincerely acknowledges the support of previous works such as **QwenAudio, SongEval, and MuQ**!.
 
 All project resources, including **source code, model weights, and human-annotated datasets**, are now fully open-sourced.
 
