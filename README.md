@@ -9,6 +9,10 @@ This work sincerely acknowledges the support of previous works such as **QwenAud
 
 All project resources, including **source code, model weights, and human-annotated datasets**, are now fully open-sourced.
 
+## Experimental Branches
+
+Additional KTV scoring experiments are available in two branches: [`feature/vocal-score-ktv-remake`](https://github.com/CarlWangChina/QwenFeat-Vocal-Score/tree/feature/vocal-score-ktv-remake) contains the initial high-score vocal data expansion and feature-fusion experiments, while [`feature/ktv-rerecord-highscore-v2`](https://github.com/CarlWangChina/QwenFeat-Vocal-Score/tree/feature/ktv-rerecord-highscore-v2) provides the consolidated KTV re-recording experiments, including dataset splits, Pairwise/regression comparisons, checkpoints, and reproducible commands.
+
 # VocalVerse1: Singing Evaluation Model based on QwenAudio
 
 [qwenaudio](./qwenaudio/README.md) **Qwen Comment Generation + Scoring Module**: This includes a Lora-trained version of Qwen-audio. It takes audio as input and outputs comments on issues in the singing voice (equivalent to descriptive tagging). These comments are then used as input for a "deep thinking" phase to perform the final timbre scoring. Finally, a TTS system with a singer's voice is used to generate the vocal critique. The full workflow is:
