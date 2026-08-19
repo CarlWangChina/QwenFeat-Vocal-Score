@@ -6,6 +6,16 @@
 *.out
 __pycache__/*
 
+# Local AI-agent settings and tool caches
+.agents/
+.agent/
+.claude/
+.codex/
+.cache/
+AGENTS.md
+CLAUDE.md
+CODEX.md
+
 qwenaudio/data/cutted_score_audio/*
 qwenaudio/audio_model_checkpoints/*
 qwenaudio/data/audio_sep_seg/*
@@ -16,7 +26,7 @@ qwenaudio/data/*
 qwenaudio/outputs/*
 
 audioscore/.vscode/*
-# audioscore/ckpts/*
+audioscore/ckpts
 audioscore/pretrain/*
 audioscore/data/**/*.wav
 audioscore/data/**/*.m4a

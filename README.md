@@ -99,6 +99,13 @@ If model loading hangs, try using a Hugging Face mirror:
 
 **Note**: This repository does not contain the model weights. Researchers should download the full repository including models from Hugging Face: [https://huggingface.co/karl-wang/QwenFeat-Vocal-Score/] 
 
+## KTV Re-recording Experiment Archive (2026-05)
+
+See [audioscore/README.md](./audioscore/README.md) for the dataset split, Pairwise and regression results, selected checkpoint, and training/inference commands.
+
+- [Final checkpoint](https://huggingface.co/karl-wang/QwenFeat-Vocal-Score/tree/main/audioscore/ckpts/SongEvalGenerator/step_3_ktv_rerecord_highscore) — place at `audioscore/ckpts/SongEvalGenerator/step_3_ktv_rerecord_highscore/`.
+- [Experiment checkpoints](https://huggingface.co/karl-wang/vocalverse-highscore-expand-train-cqy/tree/main/audioscore/ckpts/SongEvalGenerator/ktv_rerecord_experiments) — place at `audioscore/ckpts/SongEvalGenerator/ktv_rerecord_experiments/`.
+
 ## Usage
 
 ### Environment Setup
@@ -341,6 +348,13 @@ conda环境用qwenaudio, 两个模型权重都复制进去了
 
 最后注意: 本仓库不包含模型部分, 研究者需要前往huggingface下载包含模型的完整仓库： [https://huggingface.co/karl-wang/QwenFeat-Vocal-Score/]  
 
+## KTV 重录扩充实验归档（2026-05）
+
+数据划分、Pairwise 与直接回归结果、最终 checkpoint 和训练/推理命令见 [audioscore/README.md](./audioscore/README.md)。
+
+- [最终 checkpoint](https://huggingface.co/karl-wang/QwenFeat-Vocal-Score/tree/main/audioscore/ckpts/SongEvalGenerator/step_3_ktv_rerecord_highscore) — 下载后放到 `audioscore/ckpts/SongEvalGenerator/step_3_ktv_rerecord_highscore/`。
+- [实验 checkpoint](https://huggingface.co/karl-wang/vocalverse-highscore-expand-train-cqy/tree/main/audioscore/ckpts/SongEvalGenerator/ktv_rerecord_experiments) — 下载后放到 `audioscore/ckpts/SongEvalGenerator/ktv_rerecord_experiments/`。
+
 ## 使用方法：  
 
 ### 安装环境  
@@ -478,5 +492,3 @@ VocalVerse_Datasets-human_labels文件夹包含三个核心文件，提供了针
 为了使用本数据集，您需要通过 ID 将音频文件与 Excel 表格（位于 `VocalVerse_Datasets-human_labels` 文件夹）中的评分信息对应起来：
 1.  **获取 ID**：请查看 Excel 表格中的 **`Song ID`** 和 **`Record ID`** 列。
 2.  **查找音频**：根据这两个 ID 在 Hugging Face 数据集中查找对应的音频文件。文件名与这些唯一标识符直接对应，确保您能准确找到每条评分或评语所对应的原始录音。
-
-

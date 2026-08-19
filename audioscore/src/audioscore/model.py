@@ -1763,7 +1763,14 @@ class SongEvalGenerator_audio_lora(torch.nn.Module):
 
         self.muq = MuQ.from_pretrained("OpenMuQ/MuQ-large-msd-iter")
 
-        # 注入 LoRA
+        # 冻结所有 MuQ 参数，LayerNorm 除外（保持可训练以适应分布偏移）
+        for name, param in self.muq.named_parameters():
+            if "norm" in name.lower():
+                param.requires_grad = True
+            else:
+                param.requires_grad = False
+
+        # 注入 LoRA（lora_A / lora_B 自动设为 requires_grad=True）
         self.muq = inject_lora_into_muq(
             self.muq,
             r=lora_r,
@@ -1779,7 +1786,7 @@ class SongEvalGenerator_audio_lora(torch.nn.Module):
         return self.model(audio_feats_vec=audio_embeds, 
                           return_grl=return_grl, grl_alpha=grl_alpha)
 
-    def generate_tag(self, path, inverse=True):
+    def generate_tag(self, path, inverse=False):
         target_sr = 24000
         device = next(self.parameters()).device
         dtypes = {param.dtype for param in self.parameters()} | {buf.dtype for buf in self.buffers()}
@@ -1800,34 +1807,60 @@ class SongEvalGenerator_audio_lora(torch.nn.Module):
     def save_model(self, path):
         os.makedirs(path, exist_ok=True)
 
-        # 保存 Generator 部分
+        # 保存 Generator head
         torch.save(self.model.state_dict(), os.path.join(path, "weights.pt"))
 
-        # 只保存 LoRA 权重 (非常小)
-        lora_sd = get_lora_state_dict(self.muq)
-        torch.save(lora_sd, os.path.join(path, "muq_lora.pt"))
+        # 保存 LoRA delta + LayerNorm 权重（用 lora./ln. 前缀区分）
+        save_dict = {}
+        for k, v in get_lora_state_dict(self.muq).items():
+            save_dict[f"lora.{k}"] = v
+        for name, param in self.muq.named_parameters():
+            if "norm" in name.lower() and param.requires_grad:
+                save_dict[f"ln.{name}"] = param.data.cpu()
+        torch.save(save_dict, os.path.join(path, "muq_lora.pt"))
 
         with open(os.path.join(path, "type.txt"), "w") as f:
             f.write("SongEvalGenerator_audio_lora")
 
-        print(f"✔ Saved small LoRA-only model to {path}")
+        print(f"✔ Saved model (LoRA + LN) to {path}")
 
     def load_model(self, path):
         type_path = os.path.join(path, "type.txt")
         if not os.path.exists(type_path):
-            raise FileNotFoundError("Missing "+type_path)
+            raise FileNotFoundError("Missing " + type_path)
 
-        # 加载 LoRA
         lora_path = os.path.join(path, "muq_lora.pt")
         if os.path.exists(lora_path):
-            lora_sd = torch.load(lora_path, map_location="cpu")
-            load_lora_state_dict(self.muq, lora_sd)
-            print(f"✔ Loaded LoRA from {lora_path}")
+            loaded = torch.load(lora_path, map_location="cpu")
+            keys = list(loaded.keys()) if loaded else []
 
-        # 加载 Generator
+            if keys and any(k.startswith("lora.") or k.startswith("ln.") for k in keys):
+                # 新格式：lora./ln. 前缀
+                lora_sd = {k[5:]: v for k, v in loaded.items() if k.startswith("lora.")}
+                ln_sd   = {k[3:]: v for k, v in loaded.items() if k.startswith("ln.")}
+                if lora_sd:
+                    load_lora_state_dict(self.muq, lora_sd)
+                if ln_sd:
+                    for name, param in self.muq.named_parameters():
+                        if name in ln_sd:
+                            param.data.copy_(ln_sd[name])
+                print(f"✔ Loaded LoRA + LN from {lora_path}")
+            elif keys and all(
+                k.endswith(".lora_A") or k.endswith(".lora_B") or k.endswith(".scaling")
+                for k in keys
+            ):
+                # 旧格式：纯 LoRA keys（step_2 兼容）
+                load_lora_state_dict(self.muq, loaded)
+                print(f"✔ Loaded LoRA (legacy) from {lora_path}")
+            else:
+                # 旧格式：完整 MuQ state dict
+                self.muq.load_state_dict(loaded, strict=False)
+                print(f"✔ Loaded full MuQ weights from {lora_path}")
+
+        # 加载 Generator head
         gen_path = os.path.join(path, "weights.pt")
         if os.path.exists(gen_path):
-            self.model.load_state_dict(torch.load(gen_path))
+            self.model.load_state_dict(torch.load(gen_path, map_location="cpu"))
             print(f"✔ Loaded Generator from {gen_path}")
         else:
             raise FileNotFoundError(f"Missing {gen_path}")
